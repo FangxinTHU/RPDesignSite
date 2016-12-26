@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel panel-default">
+  <!-- Default panel contents -->
+  <div class="panel-heading">
+      病历列表
+      <a href="/newVisit"><button type="button" class="btn btn-success">添加病历</button></a>
+  </div>
+  <div class="panel-body">
+      <table class="table">
+        <tr>
+            <th>病历号</th>
+        </tr>
+        {% for visit in vlist %}
+            <tr>
+                <td><a href="/showVisit?IDnum={{ visit }}">{{ visit }}</a></td>
+            </tr>
+        {% endfor %}
+  </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="remarkInput">
+	<textarea rows="3" cols="10" id="remarkText"></textarea><br>
+	<input type="button" class="green_btn" id = "remarkconf" edit="false" onclick="confNewRemark()" value="确认">
+	<input type="button" class="red_btn" id = "remarkgiveup" onclick="confset();" value="放弃">
+</div>
+
+<div id="newRemark">
+	<ul style="padding:0 0 0 0;margin:0 0 0 0;">
+		<li onclick="setNewRemark();" style="list-style:none;cursor:pointer;border:1px solid rgb(195, 195, 195);">新建标注</li>
+	</ul>
+</div>
+
+<div id="changeRemark">
+	<ul style="padding:0 0 0 0;margin:0 0 0 0;">
+		<li id="editRemark" onclick="editRemark();" itemid = "-1" style="list-style:none;cursor:pointer;border:1px solid rgb(195, 195, 195);">编辑标注</li>
+		<li id="deleteRemark" onclick="deleteRemark();" itemid = "-1" style="list-style:none;cursor:pointer;border:1px solid rgb(195, 195, 195);">删除标注</li>
+	</ul>
+</div>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" href="/static/css/pure-min.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>可摘局部义齿设计工具</title>
+	<link rel="shortcut icon" href="favicon.ico" />
+	
+<div style="margin-top: 50px;margin-left:550px;">
+	<div style="font-family:'微软雅黑';font-size: 35px;">
+		可摘局部义齿设计工具
+	</div>
+	<div style="font-family:'微软雅黑';font-size: 20px">
+		Tool For Removable Partial Denture Design
+	</div>
+</div>
+<div style="margin:0 auto; margin-top:80px;padding-left: 20px;padding-right: 20px;" >
+	<canvas id="myCanvas" width="700" height="750" style="border:1px solid #c3c3c3;float:left;"></canvas>
+
+	<div id="teethnav" class="pure-form" style="float:left;text-align:left;margin-left:20px;">
+		<div class="pure-g">
+		    <div class="pure-u-1"><div style="font-size:20px;margin-bottom:15px;">请选择</div><hr></div>
+			<div class="pure-u-1">智齿：&emsp;&emsp;&emsp;&emsp;&emsp;
+				<label for="wteeth1">
+					<input id="wteeth1" type="checkbox" onclick="changeWTeeth();"> 右上
+				</label>
+				<label for="wteeth2">
+					<input id="wteeth2" type="checkbox" onclick="changeWTeeth();"> 左上
+				</label>
+				<label for="wteeth3">
+					<input id="wteeth3" type="checkbox" onclick="changeWTeeth();"> 右下
+				</label>
+				<label for="wteeth4">
+					<input id="wteeth4" type="checkbox" onclick="changeWTeeth();"> 左下
+				</label>
+			</div>
+			<div class="pure-u-1">&emsp;</div>
+			<div class="pure-u-1">1.标记缺失牙：&emsp;
+			<input type="button" class="pure-button red_btn" id = "lost" onclick="lostSelected();" value="缺失"></div>
+		    <div class="pure-u-1">&emsp;</div>
+		    <div class="pure-u-1">2.绘制支托：&emsp;&emsp;
+		    <select id = "support" onchange="supportSelected();">
+					<option value="0">--请选择--</option>
+					<option value="41" >支托</option>
+				</select>
+			</div>
+			<div class="pure-u-1">&emsp;</div>
+			<div class="pure-u-1">3.绘制卡环：&emsp;&emsp;<br><br>
+				工艺
+				<select id = "clasptype" onchange="claspSelected();">
+					<option value="0">--请选择--</option>
+					<option value="1" >铸造</option>
+					<option value="2" >弯制</option>
+				</select>
+				&emsp;&emsp;<br><br>
+				位置
+				<select id = "clasppos" onchange="claspSelected();">
+					<option value="0">--请选择--</option>
+					<option value="1" >双侧</option>
+					<option value="2" >颊侧</option>
+					<option value="3" >舌侧</option>
+				</select>
+				&emsp;&emsp;<br><br>
+				类型
+				<select id = "clasplength" onchange="claspSelected();">
+					<option value="0">--请选择--</option>
+					<option value="1" >全卡</option>
+					<option value="2" >半卡</option>
+				</select>
+			</div>
+			<div class="pure-u-1">&emsp;</div>
+			<div class="pure-u-1">4.绘制基托：&emsp;&emsp;
+			    <select id = "base" onchange="baseSelected();">
+					<option value="0">--请选择--</option>
+					<option value="21" >完整基托</option>
+					<option value="22" >只保留舌侧</option>
+				</select>
+			</div>
+			<div class="pure-u-1">&emsp;</div>
+			<div class="pure-u-1">5.绘制连接体：&emsp;
+				
+			    
+				上颌
+				<label for="topConn1">
+					<input id="topConn1" type="checkbox" onchange="conntypechanged();"> 中空
+				</label>
+				<label for="topConn2">
+					<input id="topConn2" type="checkbox" onchange="conntypechanged();"> 腭板
+				</label>
+				&emsp;&emsp;
+				下颌
+				<label for="botConn1">
+					<input id="botConn1" type="checkbox" onchange="conntypechanged();"> 舌板
+				</label>
+				<br>
+				<br>
+				<input type="button" class = "pure-button blue_btn" id = "conn" onclick="dispConn();" value="显示连接体">&emsp;
+				<input type="button" class = "pure-button blue_btn" id = "modfconn" onclick="modfConn();" value="调整连接体">&emsp;
+			</div>
+			<div class="pure-u-1">&emsp;</div>
+			<div class="pure-u-1">
+				<input type="button" class="pure-button red_btn" id = "undo" onclick="undo();" value="撤销">
+				<input type="button" class="pure-button green_btn" id = "redo" onclick="redo();" value="重做">
+			</div>
+		</div>
+		
+		
+
+	</div>
+	<input type="button" class="pure-button" onclick="submitData();" value="保存">
+	<div id="selectList" style="clear:both;text-align:left;"></div>
+</div>
+    <script>
+        var teethList = {{ teethList|safe }};
+		function submitData()
+		{
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}' }
+            });
+			$.ajax({
+				type: 'POST',
+				url: '/editTeeth/',
+				data: {'teethList[]': teethList, 'IDnum': {{ IDnum }}}
+			});
+		}
+    </script>
+	<script type="text/javascript" src="/static/js/jquery-1.12.2.min.js"></script>
+	<script type="text/javascript" src="/static/js/jcanvas.min.js"></script>
+	<script type="text/javascript" src="/static/js/jcanvas-handles.min.js"></script>
+	<script type="text/javascript" src="/static/js/global.js"></script>
+	<script type="text/javascript" src="/static/js/drawyourteeth.js"></script>
+{% endblock %}
