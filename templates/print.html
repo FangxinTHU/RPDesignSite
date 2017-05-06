@@ -1,0 +1,309 @@
+<html>  
+    <head>
+    	<script type="text/javascript" src="/static/js/jquery-1.12.2.min.js"></script>
+        <link rel="stylesheet" href="/static/css/myprint.css">
+        <!-- Bootstrap core CSS -->
+    	<!--<link href="/static/css/mybootstrap.css" rel="stylesheet">-->
+    </head>
+    <body style="text-align:center">
+
+        <div id="content" style="width:1050px;text-align:center;margin-left: auto;margin-right: auto;margin-top: 50px;">
+            <h1>北京大学口腔医院义齿加工设计单</h1>
+            <div style="margin-top:50px;">
+                <p style="float:left; margin-left: 30px;">科室名称：{{ staff.department.dname }}</p>
+                <p style="float:right; margin-right: 30px;">病历号：{{ IDnum }}</p>
+                <div style="clear: both;"></div>
+            </div>
+            <div class="tablePrint">
+            	<div class="row" style="height: 35px; margin: 0px 10px 0px 10px">
+            		<div class="col-md-1 mytd title">患者姓名</div>
+            		<div class="col-md-1 mytd">{{ patient.pname }}</div>
+            		<div class="col-md-1 mytd title">性别</div>
+            		<div class="col-md-1 mytd">
+            			{% ifequal patient.P_sexual 2 %}女
+                        {% else %}男
+                        {% endifequal %}
+            		</div>
+            		<div class="col-md-1 mytd title">年龄</div>
+            		<div class="col-md-1 mytd">{{patient.P_page}}</div>
+            		<div class="col-md-1 mytd title">电话</div>
+            		<div class="col-md-1 mytd">{{patient.phonenum}}</div>
+            		<div class="col-md-2 mytd title">取模时间</div>
+            		<div class="col-md-2 mytd" style="border-right: solid 1px black;">{{ make_model_date }}</div>
+            	</div>
+            	<div class="row" style="height: 35px; margin: 0px 10px 0px 10px">
+            		<div class="col-md-2 mytd title">医生姓名</div>
+            		<div class="col-md-2 mytd">{{ user.first_name }}</div>
+            		<div class="col-md-2 mytd title">联系电话</div>
+            		<div class="col-md-2 mytd">{{ staff.phonenum }}</div>
+            		<div class="col-md-2 mytd title">接模时间</div>
+            		<div class="col-md-2 mytd" style="border-right: solid 1px black;">{{ get_model_date }}</div>
+            	</div>
+            	<div class="row" style="height: 175px; margin: 0px 10px 0px 10px">
+            		<div class="col-md-8" style="padding:0 0 0 0 ; border-width: 0 0 0 0 ;">
+	            		<div class="col-md-2 mytd title" style="height: 140px ;">项目</div>
+	            		<div class="col-md-10 mytd" style="text-align: left; height: 140px ;">
+	            			{% for p in projectList %}
+	                            <div class="col-md-3">
+	                            	<label>
+	                                    <input type="checkbox" name="projects[]" value="{{ p.id }}" />
+	                                    {{ p.tname }}
+	                                </label>
+	                            </div>
+	                        {% endfor %}
+	            		</div>
+	            		<div class="col-md-2 mytd title">制作费</div>
+	            		<div class="col-md-10 mytd">{{ fee }}</div>
+	            	</div>
+            		<div class="col-md-1 mytd title" style="height: 175px ;">复诊日期</div>
+            		<div class="col-md-3 mytd" style="padding:0 0 0 0 ; border-width: 0 0 0 0 ;">
+            			{% ifequal RType 1 %}
+	            			<div class="col-md-4 mytd title">试蜡型：</div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;">{{ try_paraffin }}</div>
+	            			<div class="col-md-4 mytd title">试桩：</div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;">{{ try_stake }}</div>
+	            			<div class="col-md-4 mytd title">试冠：</div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;">{{ try_crown }}</div>
+	            			<div class="col-md-4 mytd title">试基台：</div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;">{{ try_base }}</div>
+	            			<div class="col-md-4 mytd title">完成：</div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;">{{ finish_date }}</div>
+	            		{% else %}
+	            			<div class="col-md-4 mytd title">试支架：</div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;">{{ try_cradled }}</div>
+	            			<div class="col-md-4 mytd title">试蜡型：</div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;">{{ try_paraffin }}</div>
+	            			<div class="col-md-4 mytd title">试排牙：</div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;">{{ try_teeth_arrange }}</div>
+	            			<div class="col-md-4 mytd title">完成：</div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;">{{ finish_date }}</div>
+	            			<div class="col-md-4 mytd title"></div>
+	            			<div class="col-md-8 mytd" style="border-right: solid 1px black;"></div>
+	            		{% endifequal %}
+            		</div>
+            	</div>
+            	<div class="row" style="margin: 0px 10px 0px 10px">
+            		<div class="col-md-8 mytd" style="height: 755px ; padding:0 0 0 0 ; border-width: 0 0 0 0 ;">
+            			<div class="col-md-8 mytd" style="height: 600px ; padding:0 0 0 0 ;">
+            				<canvas id="myCanvas" width="700" height="700" style="margin-left: -100px; margin-top: -50px"></canvas>
+            			</div>
+            			<div class="col-md-4 mytd" style="text-align: left; line-height: 35px; height: 600px ; padding:20px 0 0 0 ; border-width: 1px 0 0 0 ;">
+	            			<strong>设计说明及要求：</strong><br>
+	            			{{ design_explain }}
+	            		</div>
+            			<div class="col-md-9 mytd" style="border-width: 0 0 0 1px ;"></div>
+            			<div class="col-md-3 mytd" style="text-align: left; padding-left: 15px ; padding-right: 15px ;">比色：{{ color }}</div>
+            			<div class="col-md-2 mytd title" style="height:120px ; border-bottom: solid 1px black;">修复材料</div>
+            			<div class="col-md-10 mytd" style="height:120px ; text-align: left; border-bottom: solid 1px black;">
+            				{% ifequal RType 2 %}
+            					<label class="col-md-2">支架：</label>
+            					<div class="col-md-10">
+	                              	{% for m in materialList %}
+	                                    {% ifequal m.pos 1 %}
+	                                        <div class="col-md-4">
+	                                        	<label>
+	                                                <input type="checkbox" name="materials[]" value="{{ m.id }}" />
+	                                                {{ m.mname }}
+	                                            </label>
+	                                        </div>
+	                                    {% endifequal %}
+	                                {% endfor %}
+	                            </div>
+	                            <label class="col-md-2">基托：</label>
+            					<div class="col-md-10">
+	                              	{% for m in materialList %}
+	                                    {% ifequal m.pos 2 %}
+	                                        <div class="col-md-4">
+	                                        	<label>
+	                                                <input type="checkbox" name="materials[]" value="{{ m.id }}" />
+	                                                {{ m.mname }}
+	                                            </label>
+	                                        </div>
+	                                    {% endifequal %}
+	                                {% endfor %}
+	                            </div>
+	                            <label class="col-md-2">人工牙：</label>
+            					<div class="col-md-10">
+	                              	{% for m in materialList %}
+	                                    {% ifequal m.pos 3 %}
+	                                        <div class="col-md-4">
+	                                        	<label>
+	                                                <input type="checkbox" name="materials[]" value="{{ m.id }}" />
+	                                                {{ m.mname }}
+	                                            </label>
+	                                        </div>
+	                                    {% endifequal %}
+	                                {% endfor %}
+	                            </div>
+                                 
+                            {% else %}
+                                {% for m in materialList %}
+                                    <div class="col-md-3">
+                                    	<label>
+	                                        <input type="checkbox" name="materials[]" value="{{ m.id }}" />
+	                                        {{ m.mname }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            {% endifequal %}
+            			</div>
+            		</div>
+            		
+            		<div class="col-md-1 mytd title" style="height: 755px ; border-bottom: solid 1px black;">原模型检验/制作单审核</div>
+            		<div class="col-md-3 mytd" style="border-top:0px; padding:0 0 0 0 ; height: 755px ; text-align: left;">
+            			<div class="col-md-12" style="padding:0 0 0 0; border-right: solid 1px black;">
+	            			{% ifequal RType 1 %}
+	                            <label class="col-md-4 mytd title" style="text-align: right; border-left: 0px;">预备体边缘：</label>
+	                        {% else %}
+	                            <label class="col-md-4 mytd title" style="text-align: right; border-left: 0px;">模型边缘：</label>
+	                        {% endifequal %}
+	                        <div class="col-md-8 mytd" style="border-left: 0px;">
+	                        	&emsp;
+	                            <label>
+	                                <input type="radio" name="model_edge" value="1">清楚
+	                            </label>
+	                            &emsp;
+	                            <label>
+	                                <input type="radio" name="model_edge" value="2">不清楚
+	                            </label>
+	                        </div>
+	                    </div>
+	                    <div class="col-md-12" style="padding:0 0 0 0; border-right: solid 1px black;">
+	                    	<label class="col-md-4 mytd title" style="text-align: right; border-left: 0px;">咬合：</label>
+	                        <div class="col-md-8 mytd" style="border-left: 0px;">
+	                        	&emsp;
+	                            <label>
+                                    <input type="radio" name="occlusion_state" value="1">稳
+                                </label>
+	                            &emsp;
+	                            <label>
+                                    <input type="radio" name="occlusion_state" value="2">不稳
+                                </label>
+	                        </div>
+	                    </div>
+	                    <div class="col-md-12" style="padding:0 0 0 0; border-right: solid 1px black;">
+	                    	<label class="col-md-4 mytd title" style="text-align: right; border-left: 0px;">牙合位记录：</label>
+	                        <div class="col-md-8 mytd" style="border-left: 0px;">
+	                        	&emsp;
+	                        	<label>
+                                    <input type="radio" name="occlusion_record" value="1">有
+                                </label>
+                                &emsp;
+                                <label>
+                                    <input type="radio" name="occlusion_record" value="2">无
+                                </label>
+                            </div>
+	                    </div>
+	                    <div class="col-md-12" style="padding:0 0 0 0; border-right: solid 1px black;">
+	                    	<label class="col-md-4 mytd title" style="text-align: right; border-left: 0px;">牙体预备：</label>
+	                        <div class="col-md-8 mytd" style="border-left: 0px;">
+	                        	&emsp;
+	                        	<label>
+                                    <input type="radio" name="teeth_pre" value="1">够
+                                </label>
+                                &emsp;
+                                <label>
+                                    <input type="radio" name="teeth_pre" value="2">不够
+                                </label>
+                            </div>
+	                    </div>
+	                    <div class="col-md-12" style="padding:0 0 0 0;">
+	                    	<div class="col-md-6 mytd title" style="border-left: 0px; text-align: center;">发现问题</div>
+	                    	<div class="col-md-6 mytd title" style="border-right: solid 1px black; text-align: center;">处理方法</div>
+	                    	<div class="col-md-6 mytd" style="height:455px ; border-left: 0px;">{{ problem }}</div>
+	                    	<div class="col-md-6 mytd" style="height:455px ; border-right: solid 1px black;">{{ solution }}</div>
+	                    	<div class="col-md-6 mytd title" style="border-left: 0px;">&emsp;初检签字：</div>
+	                    	<div class="col-md-6 mytd title" style="border-right: solid 1px black;">&emsp;终检签字：</div>
+	                    	<div class="col-md-6 mytd" style="border-width: 0 0 0 0; text-align: center;">{{ precheck }}</div>
+	                    	<div class="col-md-6 mytd" style="border-width: 0 1px 0 1px; text-align: center;">{{ finalcheck }}</div>
+	                    	<div class="col-md-6 mytd title" style="border-width: 0px 0px 1px 0px;">日期：{{ precheck_date }}</div>
+	                    	<div class="col-md-6 mytd title" style="border-width: 0px 1px 1px 1px;">日期：{{ finalcheck_date }}</div>
+	                    </div>
+
+	                </div>
+ 				</div>
+ 				<div class="row" style="margin: 20px 10px 0px 10px">
+ 					<h3><strong>加工制作工序及检验记录</strong></h3>
+ 				</div>
+ 				<div class="row" style="margin: 20px 10px 0px 10px">
+                    {% ifequal RType 1 %}
+                        <div class="col-md-3 mytd title">模型组</div>
+                        <div class="col-md-3 mytd title">蜡型组</div>
+                        <div class="col-md-3 mytd title">打磨组</div>
+                        <div class="col-md-3 mytd title" style="border-width: 1px 1px 0px 1px;">烤瓷组</div>
+                        <div class="col-md-3 mytd" style="height:50px; text-align: left;">&emsp;制作人：&emsp;&emsp;{{ model_maker }}</div>
+                        <div class="col-md-3 mytd" style="height:50px; text-align: left;">&emsp;制作人：&emsp;&emsp;{{ paraffin_maker }}</div>
+                        <div class="col-md-3 mytd" style="height:50px; text-align: left;">&emsp;制作人：&emsp;&emsp;{{ burnish_maker }}</div>
+                        <div class="col-md-3 mytd" style="height:50px; text-align: left; border-width: 1px 1px 0px 1px;">&emsp;制作人：&emsp;&emsp;{{ china_arrange_makeer }}</div>
+                        <div class="col-md-3 mytd" style="height:50px; text-align: left; border-width: 0px 0px 1px 1px;">&emsp;质检员：&emsp;&emsp;{{ model_checker }}</div>
+                        <div class="col-md-3 mytd" style="height:50px; text-align: left; border-width: 0px 0px 1px 1px;">&emsp;质检员：&emsp;&emsp;{{ paraffin_checker }}</div>
+                        <div class="col-md-3 mytd" style="height:50px; text-align: left; border-width: 0px 0px 1px 1px;">&emsp;质检员：&emsp;&emsp;{{ burnish_checker }}</div>
+                        <div class="col-md-3 mytd" style="height:50px; text-align: left; border-width: 0px 1px 1px 1px;">&emsp;质检员：&emsp;&emsp;{{ china_arrange_checker }}</div>
+					{% else %}
+						<div class="col-md-4 mytd title">蜡型组</div>
+                        <div class="col-md-4 mytd title">打磨组</div>
+                        <div class="col-md-4 mytd title" style="border-width: 1px 1px 0px 1px;">排牙组</div>
+                        <div class="col-md-4 mytd" style="height:50px; text-align: left;">&emsp;制作人：&emsp;&emsp;{{ paraffin_maker }}</div>
+                        <div class="col-md-4 mytd" style="height:50px; text-align: left;">&emsp;制作人：&emsp;&emsp;{{ burnish_maker }}</div>
+                        <div class="col-md-4 mytd" style="height:50px; text-align: left; border-width: 1px 1px 0px 1px;">&emsp;制作人：&emsp;&emsp;{{ china_arrange_makeer }}</div>
+						<div class="col-md-4 mytd" style="height:50px; text-align: left; border-width: 0px 0px 1px 1px;">&emsp;质检员：&emsp;&emsp;{{ paraffin_checker }}</div>
+                        <div class="col-md-4 mytd" style="height:50px; text-align: left; border-width: 0px 0px 1px 1px;">&emsp;质检员：&emsp;&emsp;{{ burnish_checker }}</div>
+                        <div class="col-md-4 mytd" style="height:50px; text-align: left; border-width: 0px 1px 1px 1px;">&emsp;质检员：&emsp;&emsp;{{ china_arrange_checker }}</div>
+					{% endifequal %}
+
+ 				</div>
+ 			</div>    
+        </div>
+
+        <script type="text/javascript" src="/static/js/jcanvas.min.js"></script>
+        <script type="text/javascript" src="/static/js/jcanvas-handles.min.js"></script>
+        <script>
+            //存放牙齿详细信息的矩阵
+            var teethList = {{ teethList|safe }};
+            //存放当前连接体片段中各曲线的顶点
+            var quadraticTops = {{ quadraticTops|safe }};
+
+            //存放备注列表
+            var remarkList = [];
+            //上牙连接体中空部分边界点列表
+            var innerPathList = {{ innerPathList|safe }};
+            //连接体形态标识
+            var conntypelist = [{{ conntype_hollow }}, {{ maxilla_cover }}, {{ tongue_cover }}];
+            //修复项目
+            var projects = {{ projects }};
+            //修复材料
+            var materials = {{ materials }};
+
+            for(var i = 0; i < projects.length; i++)
+            {
+                $("input[name='projects[]'][value="+projects[i]+"]").attr("checked","checked");
+            }
+            for(var i = 0; i < materials.length; i++)
+            {
+                $("input[name='materials[]'][value="+materials[i]+"]").attr("checked","checked");
+            }
+            $("input[name='model_edge'][value='{{ model_edge }}']").attr("checked","checked");
+            $("input[name='occlusion_state'][value='{{ occlusion_state }}']").attr("checked","checked");
+            $("input[name='occlusion_record'][value='{{ occlusion_record }}']").attr("checked","checked");
+            $("input[name='teeth_pre'][value='{{ teeth_pre }}']").attr("checked","checked");
+            $("#teethnav").width(Math.max(document.body.offsetWidth-800, 300));
+
+            $(window).resize(function() {
+                $("#teethnav").width(Math.max(document.body.offsetWidth-800, 300));
+            });
+        </script>
+        <script type="text/javascript" src="/static/js/global.js"></script>
+        <script type="text/javascript" src="/static/js/drawyourteeth.js"></script>
+        <script type="text/javascript" src="/static/js/prehandle.js"></script>
+    </body>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
+    <script type="text/javascript">
+    	window.print();
+    </script>
+</html>  
+

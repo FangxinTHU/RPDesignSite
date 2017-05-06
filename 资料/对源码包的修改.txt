@@ -1,0 +1,4 @@
+site-packages\easy_pdf\rendering.py
+函数：fetch_resources
+path = os.path.join(settings.STATIC_ROOT, uri.replace(settings.STATIC_URL, ""))
+改为

@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.contrib.auth.models import User
 
-'''
 # Create your models here.
 class Department(models.Model):
     #科室名
@@ -13,11 +13,12 @@ class Patient(models.Model):
     pname = models.CharField(max_length=20)
     #身份证号
     idnum = models.CharField(max_length=20)
-    sexual = models.IntegerField
-    age = models.IntegerField
+    P_sexual = models.IntegerField(null=True)
+    P_page = models.IntegerField(null=True)
     phonenum = models.CharField(max_length=20, null=True)
 
 class Staff(models.Model):
+    user = models.OneToOneField(User)
     #工作证号
     idnum = models.CharField(max_length=20)
     sname = models.CharField(max_length=20)
@@ -27,24 +28,24 @@ class Staff(models.Model):
 class Treatproject(models.Model):
     tname = models.CharField(max_length=20)
     #0：固定或活动；1：活动；2：固定
-    type = models.IntegerField
+    type = models.IntegerField(default=1)
 
 class Material(models.Model):
     mname = models.CharField(max_length=30)
      #0：固定或活动；1：活动；2：固定
-    type = models.IntegerField
+    type = models.IntegerField(default=1)
      #对于活动义齿：1：支架；2：基托；3：人工牙
-    pos = models.IntegerField'''
+    pos = models.IntegerField(default=1)
 
 class RPDVisit(models.Model):
     #病历号
     idnum = models.CharField(max_length=30)
-    '''
+
     pid = models.ForeignKey(Patient)
     sid =  models.ForeignKey(Staff)
     department = models.ForeignKey(Department, null=True)
-    #1：活动；2：固定
-    type = models.IntegerField
+    #1：固定；2：活动
+    type = models.IntegerField(default=1)
     #取模时间
     make_model_date = models.DateField(null=True)
     #接模时间
@@ -111,7 +112,6 @@ class RPDVisit(models.Model):
     project = models.ManyToManyField(Treatproject)
     #设计说明及要求
     design_explain = models.TextField(null=True)
-    '''
     #顶点坐标列表
     quadraticTops = models.TextField(null=True)
     #连接体中空？

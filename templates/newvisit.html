@@ -1,22 +1,70 @@
 {% extends "base.html" %}
 {% block content %}
 
-    <form action="/addVisit/" method="post">
+    <form action="/addVisit/" method="post" class="form-horizontal" role="form">
      {% csrf_token %}
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">添加病历：</h3>
           </div>
           <div class="panel-body">
-                <div class="col-md-2"><strong>病历号：</strong></div>
-                <div class="col-md-4">
-                    <input type="text" name="IDnum" required >
+            <div class="form-group">
+                <label class="col-md-1 control-label">病历号：</label>
+                <div class="col-md-1">
+                    <input type="text" class="form-control" name="IDnum" value="{{ IDnum }}">
                 </div>
-
-                <div style="clear:both"></div>
-
+                <label class="col-md-1 control-label col-md-offset-1">患者姓名：</label>
+                <div class="col-md-1">
+                    <input type="text" class="form-control" name="Pname" required="required" value={{ patient.pname }}>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-1 control-label">身份证号：</label>
+                <div class="col-md-2">
+                    <input type="text" class="form-control" name="PIDnum" required="required" value={{patient.idnum}}>
+                </div>
+                <label class="col-md-1 control-label">性别：</label>
+                <div class="col-md-2">
+                    {% ifequal patient.P_sexual 2 %}
+                        <label class="radio-inline">
+                            <input type="radio" name="Sexual" value=1 />男
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="Sexual" value=2 checked="checked"/>女
+                        </label>
+                    {% else %}
+                        <label class="radio-inline">
+                            <input type="radio" name="Sexual" value=1 checked="checked"/>男
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" name="Sexual" value=2 />女
+                        </label>
+                    {% endifequal %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-1 control-label">年龄：</label>
+                <div class="col-md-2">
+                    <input type="text" class="form-control" name="Age" value={{patient.P_page}}>
+                </div>
+                <label class="col-md-1 control-label">联系电话：</label>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="Phonenum" value={{patient.phonenum}}>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-1 control-label">修复类型：</label>
+                <div class="col-md-2">
+                    <label class="radio-inline">
+                        <input type="radio" name="RepairType" value=1 checked="checked"/>固定类
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="RepairType" value=2 />活动类
+                    </label>
+                </div>
+            </div>
           </div>
         </div>
-    <input type="submit" class="btn btn-primary" value="提交">
+        <input type="submit" class="btn btn-primary" value="提交">
     </form>
 {% endblock %}

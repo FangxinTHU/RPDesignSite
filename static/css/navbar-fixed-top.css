@@ -1,7 +1,8 @@
 body {
   /*min-height: 2000px;*/
-  padding-top: 70px;
   font-family: 微软雅黑;
+  padding-left:20px;
+  padding-right:20px;
 }
 
 .Schimmer_num{
@@ -44,4 +45,13 @@ body {
 
 .form-text{
 	padding:5px;
+}
+
+#smartMenu li:hover{
+    background-color:#f5f5f5;
+}
+
+#smartMenu li{
+    list-style:none;
+    cursor:default;
 }

@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    {% block title %}{% endblock %}
+    <title>Denture Design Studio</title>
     <script type="text/javascript" src="/static/js/jquery-1.12.2.min.js"></script>
     <script src="/static/js/jquery.form.min.js"></script>
 
@@ -21,18 +21,36 @@
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
     <script src="/static/js/ie-emulation-modes-warning.js"></script>
+    <link rel="stylesheet" href="/static/css/pure-min.css">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="http://cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="http://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <div style="background-color: #9e9da7;padding:15px 15px 15px 15px;margin-bottom: 15px;">
+            <div style="padding-top:10px;padding-bottom:10px;width: 50%;float:left;">
+                <a href="\">
+                    <div>
+                        <img src="/static/img/title.png" style="height:80px;float: left;margin-left: 20px;">
+                    </div>
+                </a>
+            </div>
+            <div style="padding-top:10px;padding-bottom:10px;margin-right:50px;float:right;color: #ffffff">
+                <p>欢迎您&emsp;&emsp;{{ user.first_name }}</p>
+                <a href="/logout/"><button type="button" class="btn btn-danger">登出</button></a>
+            </div>
+            <div style="clear:both;"></div>
+    </div>
+    <link rel="stylesheet" href="/static/css/jPages.css">
+    <script src="/static/js/jPages.min.js"></script>
   </head>
 
-  <body>
-    <div class="container">
-    {% block content %}{% endblock %}
+  <body style="padding:0 0 0 0">
+    <div style="padding:0 15px 0 15px;">
+        {% block content %}{% endblock %}
     </div>
+
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

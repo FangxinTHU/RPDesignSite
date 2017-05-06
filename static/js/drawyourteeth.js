@@ -21,13 +21,28 @@
 LastTeethList = deepCopy(teethList);
 LastQuadraticTops = deepCopy(quadraticTops);
 loadteethmap(teethList);
-$('#teethnav').width($('body').width()-800);
 document.oncontextmenu = function(e){ 
 	return false; 
 };
-
-
-
+document.getElementById("topConn1").checked = conntypelist[0];
+document.getElementById("topConn2").checked = conntypelist[1];
+document.getElementById("botConn1").checked = conntypelist[2];
+if(teethList[0][0] != 2)
+{
+    document.getElementById("wteeth1").checked = true;
+}
+if(teethList[15][0] != 2)
+{
+    document.getElementById("wteeth2").checked = true;
+}
+if(teethList[31][0] != 2)
+{
+    document.getElementById("wteeth3").checked = true;
+}
+if(teethList[16][0] != 2)
+{
+    document.getElementById("wteeth4").checked = true;
+}
 
 /*
 //////////////////////////////////////////////////////
@@ -218,7 +233,7 @@ function InnerClickREP(layer)
 			strokeWidth: 1
 		},
 		//记录被拖动更改的是贝塞尔/抛物线上的哪一个点。1：起点，2：终点，3：第一参照点
-		mp: 3,
+		mp: 3
 	};
 	handleajustObj.type = layer.type;
 	handleajustObj.x1 = layer.x1;
@@ -327,7 +342,7 @@ function clickREP(layer)
 			strokeWidth: 1
 		},
 		//记录被拖动更改的是贝塞尔/抛物线上的哪一个点。1：起点，2：终点，3：第一参照点，4：第二参照点（仅针对三次贝塞尔曲线）
-		mp: 3,
+		mp: 3
 	};
 	handleajustObj.type = layer.type;
 	handleajustObj.x1 = layer.x1;
@@ -378,23 +393,38 @@ function clickREP(layer)
 		var i;
 		for(i = 0; i < quadraticTops.length; i++)
 		{
-			if(quadraticTops[i][1][0] == layer.px1 && quadraticTops[i][2][0] == layer.px2 )
-			{
-				//如果被调整的是参考点，直接用当前鼠标坐标覆盖记录即可
-				if(layer.mp > 2)
-				{
-					quadraticTops[i][layer.mp] = [currentMousePos.x, currentMousePos.y];
-				}
-				//否则只取当前鼠标坐标的Y值（用于调整口腔中轴线上参考点的上下调整）
-				else
-				{
-					if(quadraticTops[i][layer.mp][0] == centerX)
-					{
-						quadraticTops[i][layer.mp][1] = currentMousePos.y;
-					}
-				}
-				break;
-			}
+            if(layer.mp > 2)
+            {
+                if(quadraticTops[i][1][0] == layer.px1 && quadraticTops[i][2][0] == layer.px2 )
+			    {
+                    quadraticTops[i][layer.mp] = [currentMousePos.x, currentMousePos.y];
+                }
+            }
+            else
+            {
+                if(layer.mp == 1 && layer.px1 == centerX)
+                {
+                    if(quadraticTops[i][1][0] == centerX && quadraticTops[i][2][0] == layer.px2)
+                    {
+                        quadraticTops[i][1][1] = currentMousePos.y;
+                    }
+                    else if(quadraticTops[i][2][0] == centerX && quadraticTops[i][2][1] == layer.py1)
+                    {
+                        quadraticTops[i][2][1] = currentMousePos.y;
+                    }
+                }
+                else if(layer.mp == 2 && layer.px2 == centerX)
+                {
+                    if(quadraticTops[i][2][0] == centerX && quadraticTops[i][1][0] == layer.px1)
+                    {
+                        quadraticTops[i][2][1] = currentMousePos.y;
+                    }
+                    else if(quadraticTops[i][1][0] == centerX && quadraticTops[i][1][1] == layer.py2)
+                    {
+                        quadraticTops[i][1][1] = currentMousePos.y;
+                    }
+                }
+            }
 		}
 		
 		//没有相关历史记录则新建
@@ -465,6 +495,13 @@ function drawedgestick(pos)
 	edgestick.x2 = edgestickPoint[0];
 	edgestick.y2 = edgestickPoint[1];
 	$('canvas').addLayer(edgestick);
+    var layers = $('canvas').getLayers();
+    var temp = layers[layers.length-1];
+    for(var i = layers.length-1; i > 0; i--)
+    {
+        layers[i] = layers[i-1];
+    }
+    layers[0] = temp;
 }
 
 
@@ -499,12 +536,27 @@ function getConnPoints()
 			if(teethList[i][2] != 0)
 			{
 				//卡环？
-				pos.push(Math.floor(teethList[i][2]/1000));
+                if(Math.floor(teethList[i][2]/100)!=0)
+                {
+                    pos.push(1);
+                }
+                if(teethList[i][2]%100 != 0)
+                {
+                    pos.push(2);
+                }
 			}
 			if(teethList[i][3] != 0)
 			{
 				//支托
-				pos.push(teethList[i][3]);
+                if(teethList[i][3] > 2)
+                {
+                    pos.push(1);
+                    pos.push(2);
+                }
+                else
+                {
+                    pos.push(teethList[i][3]);
+                }
 			}
 			
 			//保证连接顺序
@@ -556,6 +608,10 @@ function getConnPoints()
 					llist.push([[j, 2-Math.floor(j/8)], [j, 1+Math.floor(j/8)], 'L']);
 				}
 				i--;
+                if((a-8)*(b-8)<=0)
+                {
+                    count += 1;
+                }
 			}
 		}
 	}
@@ -634,12 +690,25 @@ function Pos2Path(connPoints, ifcover)
 				var k;
 				for(k = 0; k < plist.length; k++)
 				{
+                    if(plist[k][0] == 'Line')
+                    {
+                        continue;
+                    }
 					if(plist[k][1].toString() == plist[j][2].toString())
 					{
+                        if(plist[k][1][0] = centerX)
+                        {
+                            plist[k][3][1] = quadraticTops[i][2][1];
+                        }
 						plist[k][1] = deepCopy(quadraticTops[i][2]);
+
 					}
 					if(plist[k][2].toString() == plist[j][1].toString())
 					{
+                        if(plist[k][2][0] = centerX)
+                        {
+                            plist[k][4][1] = quadraticTops[i][1][1];
+                        }
 						plist[k][2] = deepCopy(quadraticTops[i][1]);
 					}
 				}
@@ -650,7 +719,14 @@ function Pos2Path(connPoints, ifcover)
 				{
 					plist[j][4] = quadraticTops[i][4];
 				}
-				
+				if(plist[j][1][0] == centerX)
+                {
+                    plist[j][3][1] = quadraticTops[i][1][1];
+                }
+                else if(plist[j][2][0] == centerX)
+                {
+                    plist[j][4][1] = quadraticTops[i][2][1];
+                }
 				break;
 			}
 		}
@@ -750,7 +826,7 @@ function connTwoPoint(pos1, pos2)
 		return [
 			['Line', p1, gapPoint1],
 			['Line', gapPoint1, gapPoint2],
-			['Bezier', gapPoint2, gapPoint3, [(gapPoint2[0]+midp1[0])/2, (gapPoint2[1]+midp1[1])/2], [(gapPoint3[0]+midp2[0])/2, (gapPoint3[1]+midp2[1])/2]],
+			['Bezier', gapPoint2, gapPoint3, [(4*gapPoint2[0]+midp1[0])/5, (4*gapPoint2[1]+midp1[1])/5], [(4*gapPoint3[0]+midp2[0])/5, (4*gapPoint3[1]+midp2[1])/5]],
 			['Line', gapPoint3, gapPoint4],
 			['Line', gapPoint4, p2]
 		];
@@ -762,7 +838,7 @@ function connTwoPoint(pos1, pos2)
 		var cPoint = [centerX, (midp1[1]+midp2[1])/2];
 		
 		//如果两个点高度差显著（两侧凹形+两条三次贝塞尔）
-		if(Math.abs(midp1[1]-midp2[1]) > 20)
+		if(Math.abs(midp1[1]-midp2[1]) > 20 || true)
 		{
 			var tp1, tp2, tmpx;
 			
@@ -822,6 +898,12 @@ function connTwoPoint(pos1, pos2)
 			gapPoint3 = gapPoints.outer;
 			gapPoint4 = gapPoints.inner;
 			
+			//如果是连接体下沿，需要将二次曲线反转
+			if(cPoint[1] > teethPos[pos1[0]][pos1[1]][1] && cPoint[1] > teethPos[pos2[0]][pos2[1]][1] && pos1[0] > 7 && pos2[0] < 8)
+			{
+				cPoint[1] = teethPos[pos2[0]][pos2[1]][1] + teethPos[pos1[0]][pos1[1]][1] - cPoint[1];
+			}
+
 			return [
 				['Line', p1, gapPoint1],
 				['Line', gapPoint1, gapPoint2],
@@ -843,77 +925,78 @@ function getInnerPath(llist)
 {
 	var plist = [];
 	var centerPos,midp1,midp2,sidePos, topID, botID;
-	
+	var LeftTop = 700;
+    var RightTop = 700;
+	var LeftBot = 0;
+    var RightBot = 0;
+	var LeftLeft = 0;
+    var RightRight = 700;
+
 	//找到连接体穿越中线两个位置
 	for(var i = 0; i < llist.length; i++)
 	{
 		if(llist[i][0][0] < 8 && llist[i][1][0] > 7)
 		{
+            var MidTop;
+            var line = connTwoPoint(llist[i][0], llist[i][1])[2];
+            if(line[0] == "Quadratic")
+            {
+                var k = (line[3][1] - line[1][1])/(line[3][0] - line[1][0]);
+                var a = 0.5*k/(line[1][0] - centerX);
+                var c = line[1][1] - a*(line[1][0] - centerX)*(line[1][0] - centerX);
+                MidTop = c;
+            }
+            else
+            {
+                midp1 = getMidPoint(llist[i][0][0], llist[i][0][1]);
+			    midp2 = getMidPoint(llist[i][1][0], llist[i][1][1]);
+                MidTop = (midp1[1]+midp2[1])/2;
+            }
+            MidTop += 10;
 			topID = i;
-			midp1 = getMidPoint(llist[i][0][0], llist[i][0][1]);
-			midp2 = getMidPoint(llist[i][1][0], llist[i][1][1]);
+
 		}
 		else if(llist[i][0][0] > 7 && llist[i][1][0] < 8)
 		{
+            var MidBot;
+            var line = connTwoPoint(llist[i][0], llist[i][1])[2];
+            if(line[0] == "Quadratic")
+            {
+                var k = (line[3][1] - line[1][1])/(line[3][0] - line[1][0]);
+                var a = 0.5*k/(line[1][0] - centerX);
+                var c = line[1][1] - a*(line[1][0] - centerX)*(line[1][0] - centerX);
+                MidBot = c - 10;
+            }
+            else
+            {
+                midp1 = getMidPoint(llist[i][0][0], llist[i][0][1]);
+			    midp2 = getMidPoint(llist[i][1][0], llist[i][1][1]);
+                MidBot = (midp1[1]+midp2[1])/2 - 10;
+            }
 			botID = i;
-			midp3 = getMidPoint(llist[i][0][0], llist[i][0][1]);
-			midp4 = getMidPoint(llist[i][1][0], llist[i][1][1]);
+
 		}
+
+		if(llist[i][0][0] < 8)
+		{
+			LeftBot = Math.max(LeftBot, teethPos[llist[i][0][0]][llist[i][0][1]][1]);
+			LeftTop = Math.min(LeftTop, teethPos[llist[i][0][0]][llist[i][0][1]][1]);
+			LeftLeft = Math.max(LeftLeft, getGapPoint(llist[i][0]).outer[0]);
+		}
+		else if(llist[i][0][0] > 7)
+		{
+			RightBot = Math.max(RightBot, teethPos[llist[i][0][0]][llist[i][0][1]][1]);
+			RightTop = Math.min(RightTop, teethPos[llist[i][0][0]][llist[i][0][1]][1]);
+			RightRight = Math.min(RightRight, getGapPoint(llist[i][0]).outer[0]);
+		}
+
 	}
-	if(!midp1 || !midp2 || !midp3 || !midp4)
+	if(!MidTop || !MidBot)
 	{
 		return plist;
 	}
-	
-	//以上下两个中线穿越点的中点为中空部分中心
-	centerPos = [(midp1[0]+midp2[0]+midp3[0]+midp4[0])/4, (midp1[1]+midp2[1]+midp3[1]+midp4[1])/4];
-	
-	for(var i = 0; i < llist.length; i++)
-	{
-		sidePos = getGapPoint(llist[i][0]).outer;
-		
-		//外围点向中心辐射，取3/5分界点作为中空部分边界
-		plist.push([(3*centerPos[0]+2*sidePos[0])/5, (3*centerPos[1]+2*sidePos[1])/5]);
-		
-		//计算穿越点附近的外围边界
-		if(i == topID)
-		{
-			//如果两侧位置处于正对位，需进行特殊处理
-			if(llist[i][0][0]+llist[i][1][0] == 15+llist[i][0][1]-llist[i][1][1])
-			{
-				plist.push([(midp1[0]+midp2[0])/2, (midp1[1]+midp2[1])/2]);
-			}
-			else
-			{
-				plist.push([(3*(midp1[0]+midp2[0])/2+centerPos[0])/4, (3*(midp1[1]+midp2[1])/2+centerPos[1])/4]);
-			}
-		}
-		else if(i == botID)
-		{
-			if(llist[i][0][0]+llist[i][1][0] == 15+llist[i][1][1]-llist[i][0][1])
-			{
-				plist.push([((midp3[0]+midp4[0])/2+centerPos[0])/2, ((midp3[1]+midp4[1])/2+centerPos[1])/2]);
-			}
-			else
-			{
-				plist.push([(3*(midp3[0]+midp4[0])/2+centerPos[0])/4, (3*(midp3[1]+midp4[1])/2+centerPos[1])/4]);
-			}
-		}
-	}
-	/* var clear = true;
-	while(clear)
-	{
-		for(var i = 0; i < plist.length; i++)
-		{
-			if(PLdis(plist[i], plist[(i-1+plist.length)%plist.length], plist[(i+1+plist.length)%plist.length]) < 2)
-			{
-				plist.splice(i, 1);
-				clear = false;
-				break;
-			}
-		}
-		clear = !clear; 
-	} */
+
+	plist = [[centerX, MidTop], [RightRight, (RightBot+RightTop)/2], [centerX, MidBot], [LeftLeft, (LeftBot+LeftTop)/2]];
 	return plist;
 }
 
@@ -962,7 +1045,7 @@ function drawConn(type)
 	};
 	
 	//连接位置大于2个才有意义绘制连接体
-	if(connPoints.count > 2)
+	if(connPoints.count > 2 || (connPoints.count == 2 && (connPoints.llist[0][0]-8)*(connPoints.llist[1][0]-8)<=0))
 	{
 		//根据连接位置列表获取详细绘制信息
 		var plist = Pos2Path(connPoints, conntypelist[1]);
@@ -1012,7 +1095,7 @@ function drawConn(type)
 						x2: plist[i][2][0],
 						y2: plist[i][2][1],
 						cx1: plist[i][3][0],
-						cy1: plist[i][3][1],
+						cy1: plist[i][3][1]
 					});
 				}
 				
@@ -1078,8 +1161,8 @@ function drawConn(type)
 						j++;
 					}
 					j--;
-					i = j;
 					llist.push([connPoints.llist[i][0], connPoints.llist[j][1]]);
+                    i = j;
 				}
 				else
 				{
@@ -1195,17 +1278,17 @@ function drawConn(type)
 				{
 					if(botConnBegin[1] == 0)
 					{
-						botConnBegin = [i, Math.max(Math.floor(teethList[i][2]/1000), teethList[i][3])];
+						botConnBegin = [i, Math.max(Math.sign(Math.floor(teethList[i][2]/100)),2*Math.sign(teethList[i][2]%100), teethList[i][3])];
 					}
-					botConnEnd = [i, Math.max(Math.floor(teethList[i][2]/1000), teethList[i][3]) - Math.min(Math.floor(teethList[i][2]/1000), teethList[i][3])];
+					botConnEnd = [i, Math.max(Math.sign(Math.floor(teethList[i][2]/100)),2*Math.sign(teethList[i][2]%100), teethList[i][3]) - Math.min(Math.sign(Math.floor(teethList[i][2]/100)),2*Math.sign(teethList[i][2]%100), teethList[i][3])];
 				}
 				else
 				{
 					if(botConnBegin[1] == 0)
 					{
-						botConnBegin = [i, Math.max(Math.floor(teethList[i][2]/1000), teethList[i][3]) - Math.min(Math.floor(teethList[i][2]/1000), teethList[i][3])];
+						botConnBegin = [i, Math.max(Math.sign(Math.floor(teethList[i][2]/100)),2*Math.sign(teethList[i][2]%100), teethList[i][3]) - Math.min(Math.sign(Math.floor(teethList[i][2]/100)),2*Math.sign(teethList[i][2]%100), teethList[i][3])];
 					}
-					botConnEnd = [i, Math.max(Math.floor(teethList[i][2]/1000), teethList[i][3])];
+					botConnEnd = [i, Math.max(Math.sign(Math.floor(teethList[i][2]/100)),2*Math.sign(teethList[i][2]%100), teethList[i][3])];
 				}
 			}
 		}
@@ -1225,8 +1308,13 @@ function drawConn(type)
 		//起始点在基托上
 		if(botConnBegin[1] == 3)
 		{
-			plist.push(teethPos[botConnBegin[0]][10]);
-			plist.push([(teethPos[botConnBegin[0]][4][0] + teethPos[botConnBegin[0]][10][0])/2, (teethPos[botConnBegin[0]][4][1] + teethPos[botConnBegin[0]][10][1])/2]);
+            plist.push(teethPos[botConnBegin [0]][10]);
+            var ka1 = (teethPos[botConnBegin [0]][2][1]-teethPos[botConnBegin [0]][1][1])/(teethPos[botConnBegin [0]][2][0]-teethPos[botConnBegin [0]][1][0]);
+	        var ka2 = (teethPos[botConnBegin [0]][3][1]-teethPos[botConnBegin [0]][4][1])/(teethPos[botConnBegin [0]][3][0]-teethPos[botConnBegin [0]][4][0]);
+            var x = (ka1*teethPos[botConnBegin [0]][4][0]-ka2*teethPos[botConnBegin [0]][2][0]-teethPos[botConnBegin [0]][4][1]+teethPos[botConnBegin [0]][2][1])/(ka1-ka2);
+            var y = ka2*(x-teethPos[botConnBegin [0]][2][0])+teethPos[botConnBegin [0]][2][1];
+		    plist.push([x,y]);
+            plist.push([(teethPos[botConnBegin [0]][4][0] + teethPos[botConnBegin [0]][10][0])/2, (teethPos[botConnBegin [0]][4][1] + teethPos[botConnBegin [0]][10][1])/2]);
 		}
 		//起始点在牙齿之间
 		else
@@ -1256,8 +1344,13 @@ function drawConn(type)
 		//终止点在基托上
 		if(botConnEnd[1] == 3)
 		{
-			plist.push([(teethPos[botConnEnd[0]][4][0] + teethPos[botConnEnd[0]][10][0])/2, (teethPos[botConnEnd[0]][4][1] + teethPos[botConnEnd[0]][10][1])/2]);
-			plist.push(teethPos[botConnEnd[0]][10]);
+            plist.push([(teethPos[botConnEnd[0]][4][0] + teethPos[botConnEnd[0]][10][0])/2, (teethPos[botConnEnd[0]][4][1] + teethPos[botConnEnd[0]][10][1])/2]);
+            var ka1 = (teethPos[botConnEnd[0]][2][1]-teethPos[botConnEnd[0]][1][1])/(teethPos[botConnEnd[0]][2][0]-teethPos[botConnEnd[0]][1][0]);
+	        var ka2 = (teethPos[botConnEnd[0]][3][1]-teethPos[botConnEnd[0]][4][1])/(teethPos[botConnEnd[0]][3][0]-teethPos[botConnEnd[0]][4][0]);
+            var x = (ka1*teethPos[botConnEnd[0]][4][0]-ka2*teethPos[botConnEnd[0]][2][0]-teethPos[botConnEnd[0]][4][1]+teethPos[botConnEnd[0]][2][1])/(ka1-ka2);
+            var y = ka2*(x-teethPos[botConnEnd[0]][2][0])+teethPos[botConnEnd[0]][2][1];
+		    plist.push([x,y]);
+            plist.push(teethPos[botConnEnd[0]][10]);
 		}
 		//终止点在牙齿之间
 		else
@@ -1278,21 +1371,49 @@ function drawConn(type)
 				plist.push(p1);
 			}
 		}
+
 		
 		//绘制下牙小连接体
 		var stickpos;
-		for(var i = 16; i < 32; i++)
+        var preTemp = false;
+		for(var i = 16; i < 24; i++)
 		{
-			if(teethList[i][2] != 0)
+            if((teethList[i][2]%100 != 0 || teethList[i][3] == 2) && !preTemp)
 			{
-				stickpos = [i, Math.floor(teethList[i][2]/1000)];
+				stickpos = [i, 2];
 				drawedgestick(stickpos);
 			}
-			if(teethList[i][3] != 0 && teethList[i][3] != Math.floor(teethList[i][2]/1000))
+			if(Math.floor(teethList[i][2]/100) != 0 || teethList[i][3] == 1)
 			{
-				stickpos = [i, teethList[i][3]];
+				stickpos = [i, 1];
+				drawedgestick(stickpos);
+                preTemp = true;
+			}
+            else
+            {
+                preTemp = false;
+            }
+
+		}
+
+        for(var i = 24; i < 32; i++)
+		{
+            if((Math.floor(teethList[i][2]/100) != 0 || teethList[i][3] == 1) && !preTemp)
+			{
+				stickpos = [i, 1];
 				drawedgestick(stickpos);
 			}
+			if(Math.floor(teethList[i][2]%100) != 0 || teethList[i][3] == 2)
+			{
+				stickpos = [i, 2];
+				drawedgestick(stickpos);
+                preTemp = true;
+			}
+            else
+            {
+                preTemp = false;
+            }
+
 		}
 		
 		//构建下牙连接体对象
@@ -1315,6 +1436,119 @@ function drawConn(type)
 			});
 			obj[attrname] = $.extend(true, {}, attrvalue);
 			attrvalue = {};
+		}
+		
+		//舌板？
+		if(conntypelist[2])
+		{
+			botCoverObj = {
+				type: 'path',
+				fillStyle: '#FF6A6A',
+				strokeStyle: '#FF6A6A',
+				strokeWidth: 2,
+				layer: true,
+				closed: true
+			};
+			var beginPos = [0, 0];
+			var endPos = [0, 0];
+			for(var i = 16; i < 24; i++)
+			{
+				if(teethList[i][1] + teethList[i][2] + teethList[i][3] > 0)
+				{
+					if(teethList[i][1] == 0 && teethList[i][2]%100 != 0 && teethList[i][3] == 2)
+					{
+						beginPos = [i, 2];
+					}
+					else
+					{
+						beginPos = [i, 1];
+					}
+				}
+			}
+			for(var i = 31; i > 23; i--)
+			{
+				if(teethList[i][1] + teethList[i][2] + teethList[i][3] > 0)
+				{
+					if(teethList[i][1] == 0 && (2-Math.floor(Math.log(teethList[i][2])/Math.LN10/2)+teethList[i][3]) % 2 == 0)
+					{
+						endPos = [i, 2];
+					}
+					else
+					{
+						endPos = [i, 1];
+					}
+				}
+			}
+			if(beginPos[0] > 0 && endPos[0] > 0)
+			{
+				if(beginPos[1] == 1)
+				{
+					beginPos[0]++;
+					beginPos[1]++;
+				}
+				if(endPos[1] == 1)
+				{
+					endPos[0]--;
+					endPos[1]++;
+				}
+				count = 1;
+				
+				//attrvalue = {
+					//x1: getGapPoint(beginPos).outer[0];,
+					//y1: getGapPoint(beginPos).outer[1];
+				//};
+				attrvalue = {
+					x1: teethPos[beginPos[0]][2][0],
+					y1: teethPos[beginPos[0]][2][1]
+				};
+				for(var i = beginPos[0]; i <= endPos[0]; i++)
+				{
+					attrname = 'p'+count;
+					$.extend(true, attrvalue, {
+						type: 'quadratic',
+						cx1: teethPos[i][4][0],
+						cy1: teethPos[i][4][1],
+						x2: teethPos[i][Math.floor((i-16)/8)+1][0],
+						y2: teethPos[i][Math.floor((i-16)/8)+1][1]
+					});
+					botCoverObj[attrname] = $.extend(true, {}, attrvalue);
+					count++;
+					attrvalue = {};
+				}
+				attrname = 'p'+count;
+				$.extend(true, attrvalue, {
+					type: 'line',
+					x2: getGapPoint(endPos).outer[0],
+					y2: getGapPoint(endPos).outer[1]
+				});
+				botCoverObj[attrname] = $.extend(true, {}, attrvalue);
+				count++;
+				attrvalue = {};
+				for(var i = endPos[0]; i >= beginPos[0]; i--)
+				{
+					attrname = 'p'+count;
+					$.extend(true, attrvalue, {
+						type: 'line',
+						x2: (3*teethPos[i][10][0]+teethPos[i][4][0])/4,
+						y2: (3*teethPos[i][10][1]+teethPos[i][4][1])/4
+					});
+					botCoverObj[attrname] = $.extend(true, {}, attrvalue);
+					count++;
+					attrvalue = {};
+				}
+				attrname = 'p'+count;
+				$.extend(true, attrvalue, {
+					type: 'line',
+					x2: getGapPoint(beginPos).outer[0],
+					y2: getGapPoint(beginPos).outer[1]
+				});
+				botCoverObj[attrname] = $.extend(true, {}, attrvalue);
+				count++;
+				attrvalue = {};
+				
+				$('canvas').addLayer(botCoverObj);
+			}
+			
 		}
 		
 		//添加下牙连接体对象，调整连接体图层至最底层
@@ -1440,6 +1674,7 @@ function drawBase(begin, end, type, istmp)
 		x = (kb2*teethPos[end][posEnd][0]-kb1*teethPos[end][3][0]+teethPos[end][3][1]-teethPos[end][posEnd][1])/(kb2-kb1);
 		y = kb2*(x-teethPos[end][posEnd][0])+teethPos[end][posEnd][1];
 		plist.push([x,y]);
+
 		
 		plist.push(teethPos[end][posEnd]);
 		
@@ -1543,69 +1778,86 @@ function drawsupport(current, pos, tmp)
 	$('canvas').removeLayer('support');
 	var obj = {
 		type: 'path',
-		fillStyle: '#0000FF',
 		strokeStyle: '#0000FF',
 		strokeWidth: 2,
 		layer: true,
-		closed: true,
-		
+		closed: true
 	};
 	if(tmp)
 	{
 		obj.name = 'support';
 	}
-	
-	//绘制磨牙牙合支托
-	if((current >= 0 && current <= 4) || (current >= 11 && current <= 20) || (current >= 27 && current <= 31))
-	{
-		var x,y;
-		var point1 = [(2*teethPos[current][2*pos+3][0]+teethPos[current][pos][0])/3, (2*teethPos[current][2*pos+3][1]+teethPos[current][pos][1])/3];
-		var point2 = [(2*teethPos[current][2*pos+4][0]+teethPos[current][pos][0])/3, (2*teethPos[current][2*pos+4][1]+teethPos[current][pos][1])/3];
-		var k1 = (teethPos[current][2*pos+3][1] - teethPos[current][2*pos+4][1]) / (teethPos[current][2*pos+3][0] - teethPos[current][2*pos+4][0]);
-		var k2 = (teethPos[current][3][1] - teethPos[current][pos][1]) / (teethPos[current][3][0] - teethPos[current][pos][0]);
-		var k3 = (teethPos[current][4][1] - teethPos[current][pos][1]) / (teethPos[current][4][0] - teethPos[current][pos][0]);
 
-		var p1 = {
-			type: 'quadratic',
-			x1: point1[0], y1: point1[1],
-			cx1: teethPos[current][0][0], cy1: teethPos[current][0][1],
-			x2: point2[0], y2: point2[1]
-		};
+	//近远中支托都有
+    if(pos == 3)
+    {
+        drawsupport(current, 1, tmp)
+        drawsupport(current, 2, tmp)
+    }
+    else
+    {
+        //绘制磨牙牙合支托
+        if((current >= 0 && current <= 4) || (current >= 11 && current <= 20) || (current >= 27 && current <= 31))
+        {
+            obj.fillStyle = '#0000FF';
+            var x,y;
+            var point1 = [(2*teethPos[current][2*pos+3][0]+teethPos[current][pos][0])/3, (2*teethPos[current][2*pos+3][1]+teethPos[current][pos][1])/3];
+            var point2 = [(2*teethPos[current][2*pos+4][0]+teethPos[current][pos][0])/3, (2*teethPos[current][2*pos+4][1]+teethPos[current][pos][1])/3];
+            var k1 = (teethPos[current][2*pos+3][1] - teethPos[current][2*pos+4][1]) / (teethPos[current][2*pos+3][0] - teethPos[current][2*pos+4][0]);
+            var k2 = (teethPos[current][3][1] - teethPos[current][pos][1]) / (teethPos[current][3][0] - teethPos[current][pos][0]);
+            var k3 = (teethPos[current][4][1] - teethPos[current][pos][1]) / (teethPos[current][4][0] - teethPos[current][pos][0]);
 
-		x = (k1*teethPos[current][pos][0]-k3*teethPos[current][4][0]+teethPos[current][4][1]-teethPos[current][pos][1])/(k1-k3);
-		y = k1*(x-teethPos[current][pos][0])+teethPos[current][pos][1];
-		var p2 = {
-			type: 'quadratic',
-			cx1: x, cy1: y,
-			x2: teethPos[current][pos][0], y2: teethPos[current][pos][1]
-		};
+            var p1 = {
+                type: 'quadratic',
+                x1: point1[0], y1: point1[1],
+                cx1: teethPos[current][0][0], cy1: teethPos[current][0][1],
+                x2: point2[0], y2: point2[1]
+            };
 
-		x = (k1*teethPos[current][pos][0]-k2*teethPos[current][3][0]+teethPos[current][3][1]-teethPos[current][pos][1])/(k1-k2);
-		y = k1*(x-teethPos[current][pos][0])+teethPos[current][pos][1];
-		var p3 = {
-			type: 'quadratic',
-			cx1: x, cy1: y,
-			x2: point1[0], y2: point1[1]
-		};
-		obj.p1 = p1;
-		obj.p2 = p2;
-		obj.p3 = p3;
-	}
-	
-	//绘制尖牙支托
-	else if(current == 5 || current == 10 || current == 21 || current == 26)
-	{
-		var p1 = {
-			type: 'quadratic',
-			x1: teethPos[current][2*pos+4][0], y1: teethPos[current][2*pos+4][1],
-			cx1: teethPos[current][0][0], cy1: teethPos[current][0][1],
-			x2: (teethPos[current][3-pos][0]+teethPos[current][0][0])/2, y2: (teethPos[current][3-pos][1]+teethPos[current][0][1])/2
-		};
-		obj.p1 = p1;
-	}
-	$('canvas').addLayer(obj);
-	$('canvas').drawLayers();
+            x = (k1*teethPos[current][pos][0]-k3*teethPos[current][4][0]+teethPos[current][4][1]-teethPos[current][pos][1])/(k1-k3);
+            y = k1*(x-teethPos[current][pos][0])+teethPos[current][pos][1];
+            var p2 = {
+                type: 'quadratic',
+                cx1: x, cy1: y,
+                x2: teethPos[current][pos][0], y2: teethPos[current][pos][1]
+            };
 
+            x = (k1*teethPos[current][pos][0]-k2*teethPos[current][3][0]+teethPos[current][3][1]-teethPos[current][pos][1])/(k1-k2);
+            y = k1*(x-teethPos[current][pos][0])+teethPos[current][pos][1];
+            var p3 = {
+                type: 'quadratic',
+                cx1: x, cy1: y,
+                x2: point1[0], y2: point1[1]
+            };
+            obj.p1 = p1;
+            obj.p2 = p2;
+            obj.p3 = p3;
+        }
+
+        //绘制尖牙支托
+        else if(current == 5 || current == 10 || current == 21 || current == 26)
+        {
+            /*var p1 = {
+                type: 'quadratic',
+                x1: teethPos[current][2*pos+4][0], y1: teethPos[current][2*pos+4][1],
+                cx1: teethPos[current][0][0], cy1: teethPos[current][0][1],
+                x2: (teethPos[current][3-pos][0]+teethPos[current][0][0])/2, y2: (teethPos[current][3-pos][1]+teethPos[current][0][1])/2
+            };*/
+            var p1 = {
+                type: 'quadratic',
+                x1: teethPos[current][pos][0], y1: teethPos[current][pos][1],
+                cx1: (teethPos[current][0][0]+teethPos[current][0][0])/2, cy1: (teethPos[current][0][1]+teethPos[current][0][1])/2,
+                x2: teethPos[current][10-2*pos][0], y2: teethPos[current][10-2*pos][1]
+            };
+            obj.closed = false;
+            obj.strokeWidth = 6;
+            obj.rounded = 100;
+            obj.p1 = p1;
+
+        }
+        $('canvas').addLayer(obj);
+        $('canvas').drawLayers();
+    }
 }
 
 
@@ -1622,131 +1874,132 @@ tmp：是否为响应鼠标动作的临时绘制（临时绘制会被实时刷�
 */
 function drawclasp(current, pos1, type, pos2, length, tmp)
 {
-	//卡环分两层绘制，一层path作为基底，一层boarder做外层线宽变化
-	//清除临时绘制
-	$('canvas').removeLayer('clasp');
-	$('canvas').removeLayerGroup('claspboard');
-	
-	//path基底对象
-	var obj = {
-		type: 'path',
+    //卡环分两层绘制，一层path作为基底，一层boarder做外层线宽变化
+    //清除临时绘制
+    $('canvas').removeLayer('clasp');
+    $('canvas').removeLayerGroup('claspboard');
+
+    //path基底对象
+    var obj = {
+        type: 'path',
         layer: true,
-		strokeStyle: '#000000',
-		strokeWidth: 2
-	};
-	if(tmp)
-	{
-		obj.name = 'clasp';
-	}
-	
-	//根据近远中、舌颊侧、全半卡计算要连接的点列
-	var pathlist;
-	if(pos1 == 1)
-		if(pos2 == 1)
-			if(length == 1)
-				pathlist = [2,7,3,5,1,6,4,8,2];
-			else
-				pathlist = [7,3,5,1,6,4,8];
-		else if(pos2 == 2)
-			if(length == 1)
-				pathlist = [2,7,3,5,1,6];
-			else
-				pathlist = [7,3,5,1,6];
-		else
-			if(length == 1)
-				pathlist = [2,8,4,6,1,5];
-			else
-				pathlist = [8,4,6,1,5];
-	else
-		if(pos2 == 1)
-			if(length == 1)
-				pathlist = [1,5,3,7,2,8,4,6,1];
-			else
-				pathlist = [5,3,7,2,8,4,6];
-		else if(pos2 == 2)
-			if(length == 1)
-				pathlist = [1,5,3,7,2,8];
-			else
-				pathlist = [5,3,7,2,8];
-		else
-			if(length == 1)
-				pathlist = [1,6,4,8,2,7];
-			else
-				pathlist = [6,4,8,2,7];
-	
-	
-	
-	var count = 1;
-	attrname = 'p'+ count;
-	//外层boarder对象
-	var tmpboard = {};
-	
-	//卡环路径片段对象
-	var tmpobj = {
-		x1: teethPos[current][pathlist[1]][0],
-		y1: teethPos[current][pathlist[1]][1]
-	};
-	
-	var cx,cy;
-	var k1, k2;
-	for(var i = 2; i < pathlist.length-1; i++)
-	{
-		attrname = 'p'+ count;
-		k1 = (teethPos[current][pathlist[i-2]][1] - teethPos[current][pathlist[i]][1]) / (teethPos[current][pathlist[i-2]][0] - teethPos[current][pathlist[i]][0]);
-		k2 = (teethPos[current][pathlist[i-1]][1] - teethPos[current][pathlist[i+1]][1]) / (teethPos[current][pathlist[i-1]][0] - teethPos[current][pathlist[i+1]][0]);
-		cx = (k1*teethPos[current][pathlist[i-1]][0] - k2*teethPos[current][pathlist[i]][0] + teethPos[current][pathlist[i]][1] - teethPos[current][pathlist[i-1]][1])/(k1-k2);
-		cy = k2*(cx-teethPos[current][pathlist[i]][0])+teethPos[current][pathlist[i]][1];
-		
-		$.extend(true, tmpobj, {
-			type: 'quadratic',
-			cx1: cx,
-			cy1: cy,
-			x2: teethPos[current][pathlist[i]][0],
-			y2: teethPos[current][pathlist[i]][1]
-		});
-		
-		//如果为铸造卡环，添加boarder对象
-		if(type == 1)
-		{
-			tempboard = $.extend(true, {}, tmpobj);
-			$.extend(true, tempboard, {
-				x1: teethPos[current][pathlist[i-1]][0],
-				y1: teethPos[current][pathlist[i-1]][1],
-				layer: true,
-				strokeStyle: '#000000'
-			});
-			if(tmp)
-			{
-				tempboard.groups = ['claspboard'];
-			}
-			
-			//分段设定线宽
-			if(pathlist.length >= 7)
-			{
-				if(i < Math.ceil(pathlist.length/2))
-				{
-					tempboard.strokeWidth = i;
-				}
-				else
-				{
-					tempboard.strokeWidth = pathlist.length - i;
-				}
-			}
-			else
-			{
-				tempboard.strokeWidth = i;
-			}
-			
-			$('canvas').addLayer(tempboard);
-		}
-		
-		obj[attrname] = $.extend(true, {}, tmpobj);
-		tmpobj = {};
-		count ++;
-	}
-	
-	$('canvas').addLayer(obj);
-	$('canvas').drawLayers();
+        strokeStyle: '#000000',
+        strokeWidth: 2
+    };
+    if(tmp)
+    {
+        obj.name = 'clasp';
+    }
+
+    //根据近远中、舌颊侧、全半卡计算要连接的点列
+    var pathlist;
+    if(pos1 == 1)
+        if(pos2 == 1)
+            if(length == 1)
+                pathlist = [2,7,3,5,1,6,4,8,2];
+            else
+                pathlist = [7,3,5,1,6,4,8];
+        else if(pos2 == 2)
+            if(length == 1)
+                pathlist = [2,7,3,5,1,6];
+            else
+                pathlist = [7,3,5,1,6];
+        else
+            if(length == 1)
+                pathlist = [2,8,4,6,1,5];
+            else
+                pathlist = [8,4,6,1,5];
+    else
+        if(pos2 == 1)
+            if(length == 1)
+                pathlist = [1,5,3,7,2,8,4,6,1];
+            else
+                pathlist = [5,3,7,2,8,4,6];
+        else if(pos2 == 2)
+            if(length == 1)
+                pathlist = [1,5,3,7,2,8];
+            else
+                pathlist = [5,3,7,2,8];
+        else
+            if(length == 1)
+                pathlist = [1,6,4,8,2,7];
+            else
+                pathlist = [6,4,8,2,7];
+
+
+
+    var count = 1;
+    attrname = 'p'+ count;
+    //外层boarder对象
+    var tmpboard = {};
+
+    //卡环路径片段对象
+    var tmpobj = {
+        x1: teethPos[current][pathlist[1]][0],
+        y1: teethPos[current][pathlist[1]][1]
+    };
+
+    var cx,cy;
+    var k1, k2;
+    for(var i = 2; i < pathlist.length-1; i++)
+    {
+        attrname = 'p'+ count;
+        k1 = (teethPos[current][pathlist[i-2]][1] - teethPos[current][pathlist[i]][1]) / (teethPos[current][pathlist[i-2]][0] - teethPos[current][pathlist[i]][0]);
+        k2 = (teethPos[current][pathlist[i-1]][1] - teethPos[current][pathlist[i+1]][1]) / (teethPos[current][pathlist[i-1]][0] - teethPos[current][pathlist[i+1]][0]);
+        cx = (k1*teethPos[current][pathlist[i-1]][0] - k2*teethPos[current][pathlist[i]][0] + teethPos[current][pathlist[i]][1] - teethPos[current][pathlist[i-1]][1])/(k1-k2);
+        cy = k2*(cx-teethPos[current][pathlist[i]][0])+teethPos[current][pathlist[i]][1];
+
+        $.extend(true, tmpobj, {
+            type: 'quadratic',
+            cx1: cx,
+            cy1: cy,
+            x2: teethPos[current][pathlist[i]][0],
+            y2: teethPos[current][pathlist[i]][1]
+        });
+
+        //如果为铸造卡环，添加boarder对象
+        if(type == 1)
+        {
+            tempboard = $.extend(true, {}, tmpobj);
+            $.extend(true, tempboard, {
+                x1: teethPos[current][pathlist[i-1]][0],
+                y1: teethPos[current][pathlist[i-1]][1],
+                layer: true,
+                strokeStyle: '#000000'
+            });
+            if(tmp)
+            {
+                tempboard.groups = ['claspboard'];
+            }
+
+            //分段设定线宽
+            if(pathlist.length >= 7)
+            {
+                if(i < Math.ceil(pathlist.length/2))
+                {
+                    tempboard.strokeWidth = i;
+                }
+                else
+                {
+                    tempboard.strokeWidth = pathlist.length - i;
+                }
+            }
+            else
+            {
+                tempboard.strokeWidth = i;
+            }
+
+            $('canvas').addLayer(tempboard);
+        }
+
+        obj[attrname] = $.extend(true, {}, tmpobj);
+        tmpobj = {};
+        count ++;
+    }
+
+    $('canvas').addLayer(obj);
+    $('canvas').drawLayers();
+
 }
 
 
@@ -1773,7 +2026,7 @@ function drawlost(begin, end, temp)
 	  strokeStyle: '#FF0000',
 	  strokeWidth: 3,
 	  rounded: 10,
-	  layer: true,
+	  layer: true
 	};
 	var obj2 = $.extend(true, {}, obj1);
 	if(temp)
@@ -1849,6 +2102,7 @@ c.addEventListener("mousedown", function (evt)
 	//如果是左键按下
 	if(evt.button == 0)
 	{
+        $('#smartMenu').css("display", "none");
 		var mousePos = getMousePos(c, evt);
 		current = findnrst(mousePos.x, mousePos.y);
 		
@@ -1861,26 +2115,73 @@ c.addEventListener("mousedown", function (evt)
 		//处于标记支托或卡环状态，直接写入数据
 		else if(Math.floor(state/1000) == 3 || Math.floor(state/10) == 4)
 		{
+            //近中
 			if(dis(mousePos.x, mousePos.y,teethPos[current][1][0],teethPos[current][1][1]) < dis(mousePos.x, mousePos.y,teethPos[current][2][0],teethPos[current][2][1]))
 			{
 				if(Math.floor(state/1000) == 3)
 				{
-					teethList[current][2] = state - 2000;
+                    if(Math.floor(state/100)%10 == 1)
+                    {
+                        teethList[current][2] -= Math.floor(teethList[current][2]/100)*100;
+                        var tmp = 2*Math.floor(state/10)%10 + state%10 - 2;
+                        teethList[current][2] += tmp*1000 + tmp*100;
+                    }
+                    else if(Math.floor(state/100)%10 == 2)
+                    {
+                        teethList[current][2] -= Math.floor(teethList[current][2]/1000)*1000;
+                        teethList[current][2] += (2*Math.floor(state/10)%10 + state%10 - 2)*1000;
+                    }
+                    else
+                    {
+                        teethList[current][2] -= Math.floor(teethList[current][2]/100)%10*100;
+                        teethList[current][2] += (2*Math.floor(state/10)%10 + state%10 - 2)*100;
+                    }
 				}
 				else
 				{
-					teethList[current][3] = 1;
+                    if(teethList[current][3] == 2)
+                    {
+                        teethList[current][3] = 3;
+                    }
+					else
+                    {
+                        teethList[current][3] += 1;
+                    }
 				}
 			}
+
+            //远中
 			else
 			{
 				if(Math.floor(state/1000) == 3)
 				{
-					teethList[current][2] = state - 1000;
+                    if(Math.floor(state/100)%10 == 1)
+                    {
+                        teethList[current][2] = Math.floor(teethList[current][2]/100)*100;
+                        var tmp = 2*Math.floor(state/10)%10 + state%10 - 2;
+                        teethList[current][2] += tmp*10 + tmp;
+                    }
+                    else if(Math.floor(state/100)%10 == 2)
+                    {
+                        teethList[current][2] -= Math.floor(teethList[current][2]/10)%10*10;
+                        teethList[current][2] += (2*Math.floor(state/10)%10 + state%10 - 2)*10;
+                    }
+                    else
+                    {
+                        teethList[current][2] = Math.floor(teethList[current][2]/10)*10;
+                        teethList[current][2] += (2*Math.floor(state/10)%10 + state%10 - 2);
+                    }
 				}
 				else
 				{
-					teethList[current][3] = 2;
+					if(teethList[current][3] == 1)
+                    {
+                        teethList[current][3] = 3;
+                    }
+					else
+                    {
+                        teethList[current][3] = 2;
+                    }
 				}
 			}
 			storeChange('teethList');
@@ -1889,7 +2190,7 @@ c.addEventListener("mousedown", function (evt)
 	}
 	
 	//输出点击坐标
-	/* if(evt.button == 0)
+	 /*if(evt.button == 0)
 	{
 		var mousePos = getMousePos(c, evt);
 		console.log('['+ mousePos.x+','+mousePos.y +']');
@@ -1903,7 +2204,7 @@ c.addEventListener("mousedown", function (evt)
 	else
 	{
 		console.log('\n');
-	} */
+	}*/
 	
 	
 }, false); 
@@ -1940,7 +2241,7 @@ c.addEventListener("mousemove", function (evt)
 		{
 			if(Math.floor(state/1000) == 3)
 			{
-				drawclasp(current, 1, Math.floor(state/100)%10, Math.floor(state/10)%10, state%10, true);
+				drawclasp(current, 1, Math.floor(state/10)%10, Math.floor(state/100)%10, state%10, true);
 			}
 			else if(Math.floor(state/10) == 4)
 			{
@@ -1951,7 +2252,7 @@ c.addEventListener("mousemove", function (evt)
 		{
 			if(Math.floor(state/1000) == 3)
 			{
-				drawclasp(current, 2, Math.floor(state/100)%10, Math.floor(state/10)%10, state%10, true);
+				drawclasp(current, 2, Math.floor(state/10)%10, Math.floor(state/100)%10, state%10, true);
 			}
 			else if(Math.floor(state/10) == 4)
 			{
@@ -2007,28 +2308,41 @@ c.addEventListener("mouseup", function (evt)
 	else if(evt.button == 2)
 	{
 		//判断点击位置是否在某个备注框的范围之内，显示相应右键菜单内容
-		var i;
+		var i, j;
+        $('#smartMenu').css("display", "block");
+        $('#smartMenu').css("left", evt.clientX + $(document).scrollLeft());
+        $('#smartMenu').css("top", evt.clientY + $(document).scrollTop());
+
 		for(i = 0; i < remarkList.length; i++)
 		{
 			if(currentMousePos.x > remarkList[i][1][0] && currentMousePos.x < remarkList[i][2][0] && currentMousePos.y > remarkList[i][1][1] && currentMousePos.y < remarkList[i][2][1])
 			{
 				$('#newRemark').css("display", "none");
 				$('#editRemark').attr("itemid", i);
-				$('#changeRemark').css("display", "block");
-				$('#changeRemark').css("left", evt.clientX + $(document).scrollLeft());
-				$('#changeRemark').css("top", evt.clientY + $(document).scrollTop());
 				postRclickpos = [currentMousePos.x, currentMousePos.y];
 				break;
 			}
 		}
 		if(i == remarkList.length)
 		{
-			$('#changeRemark').css("display", "none");
-			$('#newRemark').css("display", "block");
-			$('#newRemark').css("left", evt.clientX + $(document).scrollLeft());
-			$('#newRemark').css("top", evt.clientY + $(document).scrollTop());
+			$('#editRemark').css("display", "none");
+            $('#deleteRemark').css("display", "none");
 			postRclickpos = [currentMousePos.x, currentMousePos.y];
 		}
+
+        for(j = 0; j < 32; j++)
+        {
+            if(dis(currentMousePos.x, currentMousePos.y, teethPos[j][0][0], teethPos[j][0][1]) < dis(teethPos[j][0][0], teethPos[j][0][1], teethPos[j][4][0], teethPos[j][4][1]))
+            {
+                $(".editTooth").css("display", "block");
+                toothSelected = j;
+                break;
+            }
+        }
+        if(j == 32)
+        {
+            $(".editTooth").css("display", "none");
+        }
 	}
 }, false); 
 
@@ -2088,7 +2402,7 @@ function claspSelected()
 	//标记卡环选择状态：3
 	if(parseInt(clasptype)*parseInt(clasppos)*parseInt(clasplength) != 0)
 	{
-		state = 3*1000 + parseInt(clasptype)*100 + parseInt(clasppos)*10 + parseInt(clasplength);
+		state = 3*1000 + parseInt(clasptype)*10 + parseInt(clasppos)*100 + parseInt(clasplength);
 	}
 }
 
@@ -2190,12 +2504,12 @@ function conntypechanged()
 function confset()
 {
 	
-	$('#newRemark').css("display", "none");
+	$('#smartMenu').css("display", "none");
 	$('#remarkText').val('');
 	$('#remarkInput').css("display", "none");
 	$('#editRemark').attr("itemid", "-1");
+    toothSelected = -1;
 	$('#remarkconf').attr("edit", "false");
-	$('#changeRemark').css("display", "none");
 	$('#support').val("0");
 	$('#clasptype').val("0");
 	$('#clasppos').val("0");
@@ -2266,6 +2580,18 @@ function redrawall()
 	cxt.clearRect(0, 0, c.width, c.height);
 	$('canvas').removeLayers();
 	loadteethmap();
+    /*for(var i = 0; i < 32; i++)
+    {
+        for(var j = 0; j < 11; j++)
+        {
+            $('canvas').drawArc({
+              strokeStyle: '#FF0000',
+              strokeWidth: 2,
+              x: teethPos[i][j][0], y: teethPos[i][j][1],
+              radius: 1
+            });
+        }
+    }*/
 }
 
 
@@ -2318,21 +2644,7 @@ function getsourceString(pos)
 //牙位图绘制主函数
 function loadteethmap()
 {
-	//绘制基托
-	for(var i=0;i<32;i++)
-  	{
-  		if(teethList[i][1] != 0)
-  		{
-  			var begin = i;
-  			var type = teethList[i][1];
-  			while(i < 32 && teethList[i][1] == type && i < (Math.floor(i/16)+1)*16 )
-  			{
-  				i++;
-  			}
-  			drawBase(begin, i-1, type, false);
-  			i -= 1;
-  		}
-  	}
+
 
 	//绘制牙齿图像
 	$('canvas').drawImage({
@@ -2396,7 +2708,26 @@ function loadteethmap()
   	}
 	if(teethList[i][2] != 0)
 	{
-		drawclasp(i, Math.floor(teethList[i][2]/1000), Math.floor(teethList[i][2]/100)%10, Math.floor(teethList[i][2]/10)%10, teethList[i][2]%10, false);
+        var a = Math.floor(teethList[i][2]/1000);
+        var b = Math.floor(teethList[i][2]/100)%10;
+        var c = Math.floor(teethList[i][2]/10)%10;
+        var d = teethList[i][2]%10;
+        if(a!=0)
+        {
+            drawclasp(i, 1, Math.floor((a-1)/2)+1, 2, 2-a%2, false);
+        }
+        if(b!=0)
+        {
+            drawclasp(i, 1, Math.floor((b-1)/2)+1, 3, 2-b%2, false);
+        }
+        if(c!=0)
+        {
+            drawclasp(i, 2, Math.floor((c-1)/2)+1, 2, 2-c%2, false);
+        }
+        if(d!=0)
+        {
+            drawclasp(i, 2, Math.floor((d-1)/2)+1, 3, 2-d%2, false);
+        }
 	}
 	if(teethList[i][3] != 0)
 	{
@@ -2415,6 +2746,22 @@ function loadteethmap()
   {
 	  drawRemark(remarkList[i][0], remarkList[i][1], remarkList[i][3], remarkList[i][4]);
   }
+
+    //绘制基托
+    for(var i=0;i<32;i++)
+    {
+        if(teethList[i][1] != 0)
+        {
+            var begin = i;
+            var type = teethList[i][1];
+            while(i < 32 && teethList[i][1] == type && i < (Math.floor(i/16)+1)*16 )
+            {
+                i++;
+            }
+            drawBase(begin, i-1, type, false);
+            i -= 1;
+        }
+    }
 }
 
 
@@ -2436,7 +2783,7 @@ evt：鼠标事件对象
 function getMousePos(canvas, evt) {   
     var rect = canvas.getBoundingClientRect();   
     return {   
-        x: evt.clientX - rect.left,   
+        x: evt.clientX - rect.left,
         y: evt.clientY - rect.top   
     };   
 }
@@ -2676,14 +3023,14 @@ function storeChange(listname)
 撤销操作【无返回值】
 *********
 */
-function undo()
+function OPundo()
 {
 	//如果游标在起始位置，不能再撤销
 	if(actionCursor < 0)
 	{
 		return
 	}
-	
+
 	//如果游标在首位，说明操作队列中已无可查询的历史版本，启用历史备份
 	else if(actionCursor == 0)
 	{
@@ -2696,7 +3043,7 @@ function undo()
 			quadraticTops = deepCopy(LastQuadraticTops);
 		}
 	}
-	
+
 	//在之前的操作中寻找该全局变量的历史版本
 	else
 	{
@@ -2709,13 +3056,13 @@ function undo()
 					break;
 				}
 			}
-			
+
 			//找到历史版本，进行回溯
 			if(i >= 0)
 			{
 				teethList = deepCopy(actionList[i][1]);
 			}
-			
+
 			//队列中没有可用的历史版本，恢复至历史备份
 			else
 			{
@@ -2739,7 +3086,7 @@ function undo()
 			{
 				quadraticTops = deepCopy(LastQuadraticTops);
 			}
-		}	
+		}
 	}
 	actionCursor--;
 	redrawall();
@@ -2751,7 +3098,7 @@ function undo()
 重做操作【无返回值】
 *********
 */
-function redo()
+function OPredo()
 {
 	//游标在队列末尾，无法重做
 	if(actionCursor == actionList.length-1)
@@ -2833,7 +3180,7 @@ function confNewRemark()
 			text: text,
 			x: 0, y: 0,
 			align: 'left',
-			maxWidth: 50,
+			maxWidth: 50
 		};
 		$('canvas').addLayer(obj);
 		var twidth = $('canvas').measureText('tempRemark').width;
@@ -2887,3 +3234,22 @@ function deleteRemark()
 	remarkList.splice(id, 1);
 	confset();
 }
+
+/*
+//////////////
+单个牙齿编辑（删除牙齿组件）
+//////////////
+*/
+
+/*
+**************************
+撤销一个牙齿的缺失状态
+**************************
+*/
+function deleteToothState(module)
+{
+    teethList[toothSelected][module] = 0;
+    storeChange('teethList');
+    confset();
+}
+

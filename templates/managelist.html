@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel panel-default" style="width:45%;float:left;margin: 0px 15px 0px 15px">
+  <!-- Default panel contents -->
+  <div class="panel-heading">
+      病历列表
+      <button type="button" class="btn btn-danger hiddenDelete" style="float: right; display: none;" onclick="deleteVisit();">删除病历</button>&emsp;
+      <button id="vistManagement" type="button" class="btn btn-primary" style="float: right;" onclick="showDelete();">管理病历</button>&emsp;
+      <a href="/newVisit" style="float: right;"><button type="button" class="btn btn-success">添加病历</button></a>&emsp;
+
+      <div style="clear:both;"></div>
+  </div>
+  <div class="panel-body">
+      <table class="table">
+        <tr>
+            <th>病历号</th>
+            <th>姓名</th>
+            <th>身份证号</th>
+            <th class="hiddenDelete" style="display: none;">选择</th>
+        </tr>
+
+      <tbody id="patientPage">
+            {% for visit in vlist %}
+
+                    <tr>
+                        <td><a href="/showVisit?IDnum={{ visit.vid }}&method=show">{{ visit.vid }}</a></td>
+                        <td><a href="/showPatient?IDnum={{ visit.pidID }}">{{ visit.pname }}</a></td>
+                        <td><a href="/showVisit?IDnum={{ visit.pidID }}">{{ visit.pidnum }}</a></td>
+                        <td class="hiddenDelete" style="display: none;"><input type="checkbox" name="visitsToDelete[]" value="{{ visit.vid }}" /></td>
+                    </tr>
+
+
+            {% endfor %}
+      </tbody>
+    </table>
+    <div class="holder"></div>
+  </div>
+</div>
+
+<div class="panel panel-default" style="width:45%;float:left;margin: 0px 15px 0px 15px">
+    <div class="panel-heading">
+          医生列表
+          <a href="/newStaff"><button type="button" class="btn btn-success">添加医生</button></a>
+    </div>
+    <div class="panel-body">
+        <table class="table">
+            <tr>
+                <th>工作证号</th>
+                <th>姓名</th>
+                <th>科室</th>
+            </tr>
+            {% for staff in slist %}
+                <tr>
+                    <td><a href="/showStaff?IDnum={{ staff.sid }}">{{ staff.sid }}</a></td>
+                    <td><a href="/showStaff?IDnum={{ staff.sid }}">{{ staff.sname }}</a></td>
+                    <td><a href="/showStaff?IDnum={{ staff.sid }}">{{ staff.department }}</a></td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        $("div.holder").jPages({
+            containerID: "patientPage",
+            perPage: 15,
+            startPage: 1,
+            startRange: 1,
+            midRange: 5
+        });
+    });
+    function showDelete(){
+        if($("#vistManagement").html() == "管理病历")
+        {
+            $(".hiddenDelete").css('display', 'block');
+            $("#vistManagement").html("取消");
+        }
+        else
+        {
+            $(".hiddenDelete").css('display', 'none');
+            $("#vistManagement").html("管理病历");
+        }
+
+    };
+
+    function deleteVisit()
+    {
+        var visitsToDelete = [];
+        $("input[name='visitsToDelete[]']:checked").each(function (i, n) {
+            visitsToDelete.push(n.value);
+        });
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}' }
+        });
+        $.ajax({
+            type: 'POST',
+            url: '/deleteVisit/',
+            data: {'visitsToDelete[]': visitsToDelete},
+            success: function(data){alert('已删除！');location.reload();}
+		});
+
+    };
+</script>
+{% endblock %}

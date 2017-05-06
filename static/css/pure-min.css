@@ -48,15 +48,7 @@ Copyright (c) Nicolas Gallagher and Jonathan Neal
 	margin-bottom: 5px;
 }
 
-#newRemark
-{
-	display: none;
-	position: absolute;
-	left: 0px;
-	top: 0px;
-}
-
-#changeRemark
+#smartMenu
 {
 	display: none;
 	position: absolute;
