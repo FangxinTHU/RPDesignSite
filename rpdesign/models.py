@@ -135,6 +135,8 @@ class Tooth(models.Model):
     tooth_clasp = models.IntegerField(null=True)
     #0：无支托；1：近中支托；2：远中支托
     tooth_support = models.IntegerField(null=True)
+    #0：无腭板/舌板；1：有腭板/舌板
+    tongue_blank = models.IntegerField(null=True)
 
 class Remark(models.Model):
     vid = models.ForeignKey(RPDVisit)

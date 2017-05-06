@@ -252,6 +252,7 @@ def editTeeth(request):
                 toothobj.tooth_base = int(toothprop[1])
                 toothobj.tooth_clasp = int(toothprop[2])
                 toothobj.tooth_support = int(toothprop[3])
+                #toothobj.tongue = int(toothprop[3])
                 toothobj.save()
 
     quadraticTopString = ''
