@@ -252,7 +252,7 @@ def editTeeth(request):
                 toothobj.tooth_base = int(toothprop[1])
                 toothobj.tooth_clasp = int(toothprop[2])
                 toothobj.tooth_support = int(toothprop[3])
-                #toothobj.tongue = int(toothprop[3])
+                toothobj.tongue_blank = int(toothprop[3])
                 toothobj.save()
 
     quadraticTopString = ''
@@ -349,12 +349,13 @@ def showVisit(request):
 
     teethList = []
     for i in xrange(32):
-        teethList.append([[],[],[],[]])
+        teethList.append([[],[],[],[],[]])
     for tooth in teeth:
         teethList[tooth.pos][0] = tooth.tooth_lost
         teethList[tooth.pos][1] = tooth.tooth_base
         teethList[tooth.pos][2] = tooth.tooth_clasp
         teethList[tooth.pos][3] = tooth.tooth_support
+        teethList[tooth.pos][4] = tooth.tongue_blank
 
     make_model_date = ''
     if visit.make_model_date:

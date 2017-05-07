@@ -342,6 +342,7 @@
                     <li class="editTooth" onclick="deleteToothState(1);" itemid = "-1">删除基托</li>
                     <li class="editTooth" onclick="deleteToothState(2);" itemid = "-1">删除卡环</li>
                     <li class="editTooth" onclick="deleteToothState(3);" itemid = "-1">删除支托</li>
+                    <li class="editTooth" onclick="deleteToothState(4);" itemid = "-1">删除腭/舌板</li>
                 </ul>
             </div>
             <div id="mainRapper" style="margin:0 auto; margin-top:15px;" >
@@ -445,33 +446,22 @@
                                     <div class="col-md-12">
                                         <label class="control-label">5.绘制连接体：</label>
                                     </div>
-                                    <div class="col-md-2">
-                                        <label class="control-label">上颌：</label>
-                                    </div>
-                                    <div class="col-md-5">
-                                        <div class="checkbox">
-                                            <label for="topConn1">
-                                                <input id="topConn1" type="checkbox" onchange="conntypechanged();"> 中空
-                                            </label>
-                                            &emsp;
-                                            <label for="topConn2">
-                                                <input id="topConn2" type="checkbox" onchange="conntypechanged();"> 腭板
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <label class="control-label">下颌：</label>
+                                    <div class="col-md-3">
+                                        <input type="button" class="pure-button blue_btn" id = "lost" onclick="blankSelected();" value="腭板/舌板">
                                     </div>
                                     <div class="col-md-3">
+                                        <input type="button" class = "pure-button blue_btn" id = "conn" onclick="dispConn();" value="显示连接体">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="button" class = "pure-button blue_btn" id = "modfconn" onclick="modfConn();" value="调整连接体">
+                                    </div>
+                                    <div class="col-md-12"></div>
+                                    <div class="col-md-3">
                                         <div class="checkbox">
-                                            <label for="botConn1">
-                                                <input id="botConn1" type="checkbox" onchange="conntypechanged();"> 舌板
+                                            <label for="topConn1">
+                                                <input id="topConn1" type="checkbox" onchange="conntypechanged();"> 上颌中空
                                             </label>
                                         </div>
-                                    </div>
-                                    <div class="col-md-8">
-                                        <input type="button" class = "pure-button blue_btn" id = "conn" onclick="dispConn();" value="显示连接体">&emsp;
-                                        <input type="button" class = "pure-button blue_btn" id = "modfconn" onclick="modfConn();" value="调整连接体">
                                     </div>
                                 </div>
                                 <div class="form-group">

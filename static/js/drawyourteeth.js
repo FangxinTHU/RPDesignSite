@@ -525,7 +525,7 @@ function getConnPoints()
 	{
 		pos = [];
 		//需要连接
-		if(teethList[i][1] + teethList[i][2] + teethList[i][3] > 0)
+		if(teethList[i][1] + teethList[i][2] + teethList[i][3] + teethList[i][4] > 0)
 		{
 			//基托？
 			if(teethList[i][1] != 0)
@@ -557,6 +557,12 @@ function getConnPoints()
                 {
                     pos.push(teethList[i][3]);
                 }
+			}
+            //腭板？
+			if(teethList[i][4] != 0)
+			{
+				pos.push(2-Math.floor(i/8));
+				count += 1;
 			}
 			
 			//保证连接顺序
@@ -607,6 +613,28 @@ function getConnPoints()
 				{
 					llist.push([[j, 2-Math.floor(j/8)], [j, 1+Math.floor(j/8)], 'L']);
 				}
+				i--;
+                if((a-8)*(b-8)<=0)
+                {
+                    count += 1;
+                }
+			}
+
+            //腭板连续连接的情况
+            if(teethList[i][4] != 0)
+			{
+				var a = i;
+				while(teethList[i][4] != 0)
+				{
+					i++;
+				}
+				var b = i-1;
+                llist.push([[a,2-Math.floor(a/8)], [a,10], 'L']);
+				for(var j = a; j < b; j++)
+				{
+					llist.push([[j,10], [j+1,10], 'L']);
+				}
+                llist.push([[b,10], [b,Math.floor(b/8)+1], 'L']);
 				i--;
                 if((a-8)*(b-8)<=0)
                 {
@@ -1017,7 +1045,7 @@ function drawConn(type)
 	//连接体主体path层
 	var obj = {
 		type: 'path',
-		fillStyle: '#FFE4E1',
+		fillStyle: '#FF6A6A',
 		strokeStyle: '#FF6A6A',
 		strokeWidth: 2,
 		layer: true,
@@ -1622,6 +1650,88 @@ function getAroundTops(plist, smooth)
 
 /*
 *********
+绘制腭板/舌板【无返回值】
+*********
+begin：起始牙齿
+end：终止牙齿
+istmp：是否为响应鼠标动作的临时绘制（临时绘制会被实时刷新）
+*/
+function drawBlank(begin, end, istmp)
+{
+	//清除临时绘制
+	$('canvas').removeLayer('blank').drawLayers();
+
+	//确定绘制的起点和终点
+	var bae = getBAndE(begin, end);
+	begin = bae.begin;
+	end = bae.end;
+
+	//腭板/舌板对象
+	var obj = {
+		type: 'path',
+		fillStyle: '#FF6A6A',
+		strokeStyle: '#FF6A6A',
+		strokeWidth: 2,
+		layer: true,
+		closed: true
+	};
+	if(istmp)
+	{
+		obj.name = 'blank';
+	}
+
+	var attrname;
+    var attrvalue = {
+        x1: teethPos[begin][(2-Math.floor(begin/8)%2)][0],
+        y1: teethPos[begin][(2-Math.floor(begin/8)%2)][1]
+    };
+
+	//构建腭板/舌板片段
+    var count = 1;
+    for(var i = begin; i <= end; i++)
+    {
+        attrname = attrname = 'p'+count;
+        count++;
+        $.extend(true, attrvalue, {
+			cx1: teethPos[i][4][0],
+			cy1: teethPos[i][4][1],
+			x2: teethPos[i][(Math.floor(i/8)%2+1)][0],
+			y2: teethPos[i][(Math.floor(i/8)%2+1)][1]
+		});
+		attrvalue.type = 'quadratic';
+		obj[attrname] = $.extend(true, {}, attrvalue);
+		attrvalue = {};
+    }
+
+    for(var i = end; i >= begin; i--)
+    {
+        attrname = attrname = 'p'+count;
+        count++;
+        $.extend(true, attrvalue, {
+			x2: teethPos[i][10][0],
+			y2: teethPos[i][10][1]
+		});
+		attrvalue.type = 'line';
+		obj[attrname] = $.extend(true, {}, attrvalue);
+		attrvalue = {};
+    }
+
+
+	//添加腭板/舌板对象，将基托图层移至最底层
+	$('canvas').addLayer(obj);
+	var layers = $('canvas').getLayers();
+	var temp = layers[layers.length-1];
+	for(var i = layers.length-1; i > 0; i--)
+	{
+		layers[i] = layers[i-1];
+	}
+	layers[0] = temp;
+	$('canvas').drawLayers();
+}
+
+
+/*
+*********
 绘制基托【无返回值】
 *********
 begin：起始牙齿
@@ -1717,7 +1827,7 @@ function drawBase(begin, end, type, istmp)
 	//基托对象
 	var obj = {
 		type: 'path',
-		fillStyle: '#FFE4E1',
+		fillStyle: '#FF6A6A',
 		strokeStyle: '#FF6A6A',
 		strokeWidth: 2,
 		layer: true,
@@ -2106,8 +2216,8 @@ c.addEventListener("mousedown", function (evt)
 		var mousePos = getMousePos(c, evt);
 		current = findnrst(mousePos.x, mousePos.y);
 		
-		//处于标记缺失或基托状态，记录起点
-		if(state == 1 || Math.floor(state/10) == 2)
+		//处于标记缺失或基托或腭板状态，记录起点
+		if(state == 1 || Math.floor(state/10) == 2 || state == 5)
 		{
 			begin = current;
 		}
@@ -2221,7 +2331,7 @@ c.addEventListener("mousemove", function (evt)
 	var mousePos = getMousePos(c, evt);
 	current = findnrst(mousePos.x, mousePos.y);
 	
-	//如果begin有记录（正在标记缺失或基托）
+	//如果begin有记录（正在标记缺失或基托或腭板）
 	if(begin >= 0)
 	{
 		if(state == 1)
@@ -2232,6 +2342,10 @@ c.addEventListener("mousemove", function (evt)
 		{
 			drawBase(begin, current, state%10, true);
 		}
+        else if(state == 5)
+        {
+            drawBlank(begin, current, true);
+        }
 	}
 	
 	//如果正在标记支托或卡环
@@ -2300,6 +2414,16 @@ c.addEventListener("mouseup", function (evt)
 			}
 			storeChange('teethList');
 		}
+
+        //如果是标记腭板
+        else if(state == 5)
+        {
+            for(var i = a; i <= b; i++)
+			{
+				teethList[i][4] = 1;
+			}
+			storeChange('teethList');
+        }
 		begin = end = current = -1;
 		redrawall();
 	}
@@ -2424,6 +2548,23 @@ function supportSelected()
 	//标记卡环选择状态：4
 	$('#support').val(support);
 	state = parseInt(support);
+}
+
+
+/*
+******************
+切换状态：腭板/舌板选择【无返回值】
+******************
+*/
+function blankSelected()
+{
+	confset();
+	isconndisped = false;
+	$('#conn').val('显示连接体');
+	$('#conn').removeClass("red_btn");
+	$('#conn').addClass("blue_btn");
+	$('#base').val(base);
+	state = 5;
 }
 
 
@@ -2746,6 +2887,21 @@ function loadteethmap()
   {
 	  drawRemark(remarkList[i][0], remarkList[i][1], remarkList[i][3], remarkList[i][4]);
   }
+
+    //绘制腭板/舌板
+    for(var i=0;i<32;i++)
+    {
+        if(teethList[i][4] != 0)
+        {
+            var begin = i;
+            while(i < 32 && teethList[i][4] != 0 && i < (Math.floor(i/16)+1)*16)
+            {
+                i++;
+            }
+            drawBlank(begin, i-1, type, false);
+            i -= 1;
+        }
+    }
 
     //绘制基托
     for(var i=0;i<32;i++)
