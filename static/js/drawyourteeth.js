@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 2016 Xin Fang 
  * version 6.0+
  * V1功能：缺失标记、完整基托、舌侧基托、普通三臂卡环、连接体简单绘制
@@ -25,8 +25,6 @@ document.oncontextmenu = function(e){
 	return false; 
 };
 document.getElementById("topConn1").checked = conntypelist[0];
-document.getElementById("topConn2").checked = conntypelist[1];
-document.getElementById("botConn1").checked = conntypelist[2];
 if(teethList[0][0] != 2)
 {
     document.getElementById("wteeth1").checked = true;
@@ -2584,7 +2582,7 @@ function dispConn()
 	}
 	else
 	{
-		conntypelist = [document.getElementById("topConn1").checked, document.getElementById("topConn2").checked, document.getElementById("botConn1").checked];
+		conntypelist = [document.getElementById("topConn1").checked];
 		isconndisped = true;
 		$('#conn').val('隐藏连接体');
 		$('#conn').removeClass("blue_btn");

@@ -13,7 +13,6 @@ except Exception:
 import cgi, os
 from django import http
 from django.conf import settings
-from easy_pdf.rendering import render_to_pdf_response
 # Create your views here.
 
 def index_view(request):
