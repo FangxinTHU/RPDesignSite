@@ -1,12 +1,6 @@
 ﻿/**
- * 2016 Xin Fang 
- * version 6.0+
- * V1功能：缺失标记、完整基托、舌侧基托、普通三臂卡环、连接体简单绘制
- * V2功能：连接体抛物线可调整、可撤销/重做（10步）
- * V3：根据新需求，更改牙列图、牙列参照点坐标数据结构，使用新结构、新需求绘制：缺失双线、基托
- * V4：根据新需求，去掉卡环图片，用图形化方式表示支托和卡环
- * V5：根据新需求，重写连接体绘制方法（包括连接体的调整，调整功能有待调试）
- * V6：新增备注功能，进一步优化连接体绘制规则，微调了卡环和支托形态
+ * 2017 Xin Fang
+ * School of software Tsinghua University
  */
 
 
@@ -17,30 +11,33 @@
 初始化动作：建立canvas对象，绘制基本牙列
 ////////////////////////////////////////
 */
+function initTeethHTML()
+{
+	LastTeethList = deepCopy(teethList);
+	LastQuadraticTops = deepCopy(quadraticTops);
+	loadteethmap(teethList);
+	document.oncontextmenu = function(e){
+		return false;
+	};
+	document.getElementById("topConn1").checked = conntypelist[0];
+	if(teethList[0][0] != 2)
+	{
+		document.getElementById("wteeth1").checked = true;
+	}
+	if(teethList[15][0] != 2)
+	{
+		document.getElementById("wteeth2").checked = true;
+	}
+	if(teethList[31][0] != 2)
+	{
+		document.getElementById("wteeth3").checked = true;
+	}
+	if(teethList[16][0] != 2)
+	{
+		document.getElementById("wteeth4").checked = true;
+	}
+}
 
-LastTeethList = deepCopy(teethList);
-LastQuadraticTops = deepCopy(quadraticTops);
-loadteethmap(teethList);
-document.oncontextmenu = function(e){ 
-	return false; 
-};
-document.getElementById("topConn1").checked = conntypelist[0];
-if(teethList[0][0] != 2)
-{
-    document.getElementById("wteeth1").checked = true;
-}
-if(teethList[15][0] != 2)
-{
-    document.getElementById("wteeth2").checked = true;
-}
-if(teethList[31][0] != 2)
-{
-    document.getElementById("wteeth3").checked = true;
-}
-if(teethList[16][0] != 2)
-{
-    document.getElementById("wteeth4").checked = true;
-}
 
 /*
 //////////////////////////////////////////////////////
@@ -1886,7 +1883,7 @@ function drawsupport(current, pos, tmp)
 	$('canvas').removeLayer('support');
 	var obj = {
 		type: 'path',
-		strokeStyle: '#0000FF',
+		strokeStyle: '#000000',
 		strokeWidth: 2,
 		layer: true,
 		closed: true
@@ -1907,10 +1904,10 @@ function drawsupport(current, pos, tmp)
         //绘制磨牙牙合支托
         if((current >= 0 && current <= 4) || (current >= 11 && current <= 20) || (current >= 27 && current <= 31))
         {
-            obj.fillStyle = '#0000FF';
+            obj.fillStyle = '#000000';
             var x,y;
-            var point1 = [(2*teethPos[current][2*pos+3][0]+teethPos[current][pos][0])/3, (2*teethPos[current][2*pos+3][1]+teethPos[current][pos][1])/3];
-            var point2 = [(2*teethPos[current][2*pos+4][0]+teethPos[current][pos][0])/3, (2*teethPos[current][2*pos+4][1]+teethPos[current][pos][1])/3];
+            var point1 = [(teethPos[current][2*pos+3][0]+teethPos[current][pos][0])/2, (teethPos[current][2*pos+3][1]+teethPos[current][pos][1])/2];
+            var point2 = [(teethPos[current][2*pos+4][0]+teethPos[current][pos][0])/2, (teethPos[current][2*pos+4][1]+teethPos[current][pos][1])/2];
             var k1 = (teethPos[current][2*pos+3][1] - teethPos[current][2*pos+4][1]) / (teethPos[current][2*pos+3][0] - teethPos[current][2*pos+4][0]);
             var k2 = (teethPos[current][3][1] - teethPos[current][pos][1]) / (teethPos[current][3][0] - teethPos[current][pos][0]);
             var k3 = (teethPos[current][4][1] - teethPos[current][pos][1]) / (teethPos[current][4][0] - teethPos[current][pos][0]);
@@ -1945,17 +1942,11 @@ function drawsupport(current, pos, tmp)
         //绘制尖牙支托
         else if(current == 5 || current == 10 || current == 21 || current == 26)
         {
-            /*var p1 = {
-                type: 'quadratic',
-                x1: teethPos[current][2*pos+4][0], y1: teethPos[current][2*pos+4][1],
-                cx1: teethPos[current][0][0], cy1: teethPos[current][0][1],
-                x2: (teethPos[current][3-pos][0]+teethPos[current][0][0])/2, y2: (teethPos[current][3-pos][1]+teethPos[current][0][1])/2
-            };*/
             var p1 = {
                 type: 'quadratic',
                 x1: teethPos[current][pos][0], y1: teethPos[current][pos][1],
-                cx1: (teethPos[current][0][0]+teethPos[current][0][0])/2, cy1: (teethPos[current][0][1]+teethPos[current][0][1])/2,
-                x2: teethPos[current][10-2*pos][0], y2: teethPos[current][10-2*pos][1]
+                cx1: teethPos[current][0][0], cy1: teethPos[current][0][1],
+                x2: (teethPos[current][0][0]+teethPos[current][10-2*pos][0])/2, y2: (teethPos[current][0][1]+teethPos[current][10-2*pos][1])/2
             };
             obj.closed = false;
             obj.strokeWidth = 6;
@@ -1963,6 +1954,36 @@ function drawsupport(current, pos, tmp)
             obj.p1 = p1;
 
         }
+
+        //绘制前牙支托
+        else
+		{
+			obj.fillStyle = '#000000';
+            var x,y;
+            var point1 = [(teethPos[current][2*pos+4][0]+teethPos[current][pos][0])/2, (teethPos[current][2*pos+4][1]+teethPos[current][pos][1])/2];
+            var point2 = [(teethPos[current][2*pos+4][0]+teethPos[current][4][0])/2, (teethPos[current][2*pos+4][1]+teethPos[current][4][1])/2];
+
+
+            var p1 = {
+                type: 'quadratic',
+                x1: point1[0], y1: point1[1],
+                cx1: teethPos[current][0][0], cy1: teethPos[current][0][1],
+                x2: point2[0], y2: point2[1]
+            };
+
+            var p2 = {
+                type: 'line',
+                x2: teethPos[current][2*pos+4][0], y2: teethPos[current][2*pos+4][1]
+            };
+
+            var p3 = {
+                type: 'line',
+                x2: point1[0], y2: point1[1]
+            };
+            obj.p1 = p1;
+            obj.p2 = p2;
+            obj.p3 = p3;
+		}
         $('canvas').addLayer(obj);
         $('canvas').drawLayers();
     }
@@ -2674,7 +2695,7 @@ function changeWTeeth()
 	}
 	else
 	{
-		teethList[0] = [2, 0, 0, 0];
+		teethList[0] = [2, 0, 0, 0, 0];
 	}
 	if(wt[1])
 	{
@@ -2682,7 +2703,7 @@ function changeWTeeth()
 	}
 	else
 	{
-		teethList[15] = [2, 0, 0, 0];
+		teethList[15] = [2, 0, 0, 0, 0];
 	}
 	if(wt[3])
 	{
@@ -2690,7 +2711,7 @@ function changeWTeeth()
 	}
 	else
 	{
-		teethList[16] = [2, 0, 0, 0];
+		teethList[16] = [2, 0, 0, 0, 0];
 	}
 	if(wt[2])
 	{
@@ -2698,7 +2719,7 @@ function changeWTeeth()
 	}
 	else
 	{
-		teethList[31] = [2, 0, 0, 0];
+		teethList[31] = [2, 0, 0, 0, 0];
 	}
 	storeChange('teethList');
 	confset();

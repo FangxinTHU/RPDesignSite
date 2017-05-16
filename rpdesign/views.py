@@ -95,9 +95,9 @@ def addVisit(request):
 
         for i in xrange(32):
             if i % 16 == 0 or i % 16 == 15:
-                newTooth = models.Tooth(vid = new_v, pos = i, tooth_lost = 2, tooth_base = 0, tooth_clasp = 0, tooth_support = 0)
+                newTooth = models.Tooth(vid = new_v, pos = i, tooth_lost = 2, tooth_base = 0, tooth_clasp = 0, tooth_support = 0, tongue_blank = 0)
             else:
-                newTooth = models.Tooth(vid = new_v, pos = i, tooth_lost = 0, tooth_base = 0, tooth_clasp = 0, tooth_support = 0)
+                newTooth = models.Tooth(vid = new_v, pos = i, tooth_lost = 0, tooth_base = 0, tooth_clasp = 0, tooth_support = 0, tongue_blank = 0)
             newTooth.save()
 
         url = '/showVisit/?IDnum=' + IDnum + '&method=show'
@@ -251,7 +251,7 @@ def editTeeth(request):
                 toothobj.tooth_base = int(toothprop[1])
                 toothobj.tooth_clasp = int(toothprop[2])
                 toothobj.tooth_support = int(toothprop[3])
-                toothobj.tongue_blank = int(toothprop[3])
+                toothobj.tongue_blank = int(toothprop[4])
                 toothobj.save()
 
     quadraticTopString = ''

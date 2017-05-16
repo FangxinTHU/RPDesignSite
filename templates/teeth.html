@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
     <ul id="myTab" class="nav nav-tabs">
-        <li class="active"><a href="#BaseData" data-toggle="tab">基本信息</a></li>
+        <li><a href="#BaseData" data-toggle="tab">基本信息</a></li>
         <li><a href="#FormData" data-toggle="tab">修复信息</a></li>
-        <li><a href="#RPDDesign" data-toggle="tab">修复设计</a></li>
+        <li class="active"><a href="#RPDDesign" data-toggle="tab">修复设计</a></li>
         <li><a href="#RPDCheck" data-toggle="tab">制作工序及检验</a></li>
         <li><input type="button" class="pure-button" onclick="submitData();" value="保存"></li>
         &emsp;
         <li><input type="button" class="pure-button" onclick="window.open('/showVisit?IDnum={{ IDnum }}&method=print','print');" value="打印"></li>
     </ul>
     <div id="myTabContent" class="tab-content">
-        <div class="tab-pane fade in active" id="BaseData">
+        <div class="tab-pane fade" id="BaseData">
             <form class="form-horizontal" role="form">
                 <div class="form-group">
                     <label for="IDnum" class="col-md-1 control-label">病历号：</label>
@@ -326,7 +326,7 @@
                 </div>
             </form>
         </div>
-        <div class="tab-pane fade" id="RPDDesign">
+        <div class="tab-pane fade in active" id="RPDDesign">
             <div id="remarkInput">
 	            <textarea rows="3" cols="10" id="remarkText">{{ remarkText }}</textarea><br>
 	            <input type="button" class="green_btn" id = "remarkconf" edit="false" onclick="confNewRemark()" value="确认">
@@ -762,6 +762,8 @@
 	<script type="text/javascript" src="/static/js/jcanvas-handles.min.js"></script>
 	<script type="text/javascript" src="/static/js/global.js"></script>
 	<script type="text/javascript" src="/static/js/drawyourteeth.js"></script>
-    <script type="text/javascript" src="/static/js/prehandle.js"></script>
-
+    <script>
+        isconndisped = true;
+        initTeethHTML();
+    </script>
 {% endblock %}
