@@ -123,19 +123,20 @@ class RPDVisit(models.Model):
     #上牙连接体中空部分边界点列表
     innerPathList = models.TextField(null=True)
 
+
 class Tooth(models.Model):
     vid = models.ForeignKey(RPDVisit)
-    #表示牙齿的位置
+    # 表示牙齿的位置
     pos = models.IntegerField(null=True)
-    #0：未缺失；1：缺失；2：未长成
+    # 0：未缺失；1：缺失；2：未长成
     tooth_lost = models.IntegerField(null=True)
-    #0：无基托；1：完整基托；2：只保留舌侧基托
+    # 0：无基托；1：完整基托；2：只保留舌侧基托
     tooth_base = models.IntegerField(null=True)
-    #0：无卡环；[1/2][1/2][1/2/3][1/2]：【近/远中】【铸造/弯制】【双侧/颊侧/舌侧】【全卡/半卡】
+    # 近远中舌颊侧四个位置上的卡环类型：0-无卡环，1-铸造全卡，2-铸造半卡，3-弯制全卡，4-弯制半卡
     tooth_clasp = models.IntegerField(null=True)
-    #0：无支托；1：近中支托；2：远中支托
+    # 0：无支托；1：近中支托；2：远中支托
     tooth_support = models.IntegerField(null=True)
-    #0：无腭板/舌板；1：有腭板/舌板
+    # 0：无腭板/舌板；1：有腭板/舌板
     tongue_blank = models.IntegerField(null=True)
 
 class Remark(models.Model):
