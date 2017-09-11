@@ -478,7 +478,7 @@ function drawedgestick(pos)
 {
 	var edgestick = {
 		type: 'line',
-		strokeStyle: '#FF6A6A',
+		strokeStyle: '#A2A3A2',
 		strokeWidth: 5,
 		layer: true,
 		groups: ['edgesticks'],
@@ -871,6 +871,12 @@ function connTwoPoint(pos1, pos2)
 			gapPoint2 = gapPoints.outer;
 			temp.push(['Line', p1, gapPoint1]);
 			temp.push(['Line', gapPoint1, gapPoint2]);
+
+			//如果是连接体下沿，需要将中心点提升
+			if(cPoint[1] > teethPos[pos1[0]][pos1[1]][1] && cPoint[1] > teethPos[pos2[0]][pos2[1]][1] && pos1[0] > 7 && pos2[0] < 8)
+			{
+				cPoint[1] = teethPos[pos2[0]][pos2[1]][1] + teethPos[pos1[0]][pos1[1]][1] - cPoint[1];
+			}
 			
 			//确定第一条贝塞尔的两个控制点位置，添加第一条曲线
 			if(cPoint[1] < gapPoint2[1] && cPoint[1] > midp1[1])
@@ -1040,8 +1046,9 @@ function drawConn(type)
 	//连接体主体path层
 	var obj = {
 		type: 'path',
-		fillStyle: '#FF6A6A',
-		strokeStyle: '#FF6A6A',
+		groups: ['ConnTop'],
+		fillStyle: '#A2A3A2',
+		strokeStyle: '#A2A3A2',
 		strokeWidth: 2,
 		layer: true,
 		closed: true
@@ -1050,7 +1057,7 @@ function drawConn(type)
 	//连接体调整响应层，用于相应调整点击事件
 	var ajustObj = {
 		layer: true, 
-		strokeStyle: '#FF6A6A',
+		strokeStyle: '#A2A3A2',
 		strokeWidth: 2,
 		rounded: true,
 		idnum:-1,
@@ -1063,7 +1070,7 @@ function drawConn(type)
 		},
 		mouseout: function(layer){
 			layer.strokeWidth = 2;
-			layer.strokeStyle = '#FF6A6A';
+			layer.strokeStyle = '#A2A3A2';
 		}
 	};
 	
@@ -1218,8 +1225,9 @@ function drawConn(type)
 			}
 			obj = {
 				type: 'path',
+				groups: ['ConnTopBlank'],
 				fillStyle: '#FFFFFF',
-				strokeStyle: '#FF6A6A',
+				strokeStyle: '#A2A3A2',
 				strokeWidth: 2,
 				layer: true,
 				closed: true,
@@ -1256,24 +1264,31 @@ function drawConn(type)
 				
 				attrvalue = {};
 			}
-			
+
 			$('canvas').addLayer(obj);
 			var layers = $('canvas').getLayers();
 			var temp = layers[layers.length-1];
-			for(var i = layers.length-1; i > 1; i--)
-			{
-				layers[i] = layers[i-1];
-			}
-			layers[1] = temp;
-			$('canvas').drawLayers();
+			ibase = 0;
+            while(layers[ibase].groups.indexOf("ConnBot")*layers[ibase].groups.indexOf("edgesticks")*layers[ibase].groups.indexOf("ConnTop") == 0 && ibase < layers.length-1)
+            {
+                ibase++;
+            }
+
+            for(var i = layers.length-1; i > ibase; i--)
+            {
+                layers[i] = layers[i-1];
+            }
+            layers[ibase] = temp;
+            $('canvas').drawLayers();
 		}
 	}
 
 	//绘制下牙连接体
 	obj = {
 		type: 'path',
-		fillStyle: '#FF6A6A',
-		strokeStyle: '#FF6A6A',
+		groups: ['ConnBot'],
+		fillStyle: '#A2A3A2',
+		strokeStyle: '#A2A3A2',
 		strokeWidth: 2,
 		layer: true,
 		closed: true
@@ -1698,6 +1713,17 @@ function drawBlank(begin, end, istmp)
 		attrvalue = {};
     }
 
+    var gapPoint = getGapPoint([end, 1+(Math.floor(end/8)%2)], 'long').outer;
+    attrname = attrname = 'p'+count;
+    count++;
+    $.extend(true, attrvalue, {
+        x2: gapPoint[0],
+        y2: gapPoint[1]
+    });
+    attrvalue.type = 'line';
+    obj[attrname] = $.extend(true, {}, attrvalue);
+    attrvalue = {};
+
     for(var i = end; i >= begin; i--)
     {
         attrname = attrname = 'p'+count;
@@ -1711,16 +1737,40 @@ function drawBlank(begin, end, istmp)
 		attrvalue = {};
     }
 
+    gapPoint = getGapPoint([begin, 2-(Math.floor(begin/8)%2)], 'long').outer;
+    attrname = attrname = 'p'+count;
+    count++;
+    $.extend(true, attrvalue, {
+        x2: gapPoint[0],
+        y2: gapPoint[1]
+    });
+    attrvalue.type = 'line';
+    obj[attrname] = $.extend(true, {}, attrvalue);
+    attrvalue = {};
 
-	//添加腭板/舌板对象，将基托图层移至最底层
+
+	//添加腭板/舌板对象，将基托图层移至连接体上一层
 	$('canvas').addLayer(obj);
 	var layers = $('canvas').getLayers();
 	var temp = layers[layers.length-1];
-	for(var i = layers.length-1; i > 0; i--)
+	if (isconndisped)
+	{
+	    i = 0;
+		while(layers[i].groups.indexOf("ConnBot")*layers[i].groups.indexOf("edgesticks")*layers[i].groups.indexOf("ConnTop") == 0 && i < layers.length-1)
+        {
+            i++;
+        }
+        ibase = i;
+	}
+	else
+	{
+		ibase = 0;
+	}
+	for(var i = layers.length-1; i > ibase; i--)
 	{
 		layers[i] = layers[i-1];
 	}
-	layers[0] = temp;
+	layers[ibase] = temp;
 	$('canvas').drawLayers();
 }
 
@@ -1761,31 +1811,94 @@ function drawBase(begin, end, type, istmp)
 	//完整基托
 	if(type == 1)
 	{
-		x = (ka1*teethPos[begin][4][0]-ka2*teethPos[begin][posBegin][0]-teethPos[begin][4][1]+teethPos[begin][posBegin][1])/(ka1-ka2);
-		y = ka2*(x-teethPos[begin][posBegin][0])+teethPos[begin][posBegin][1];
-		plist.push([x,y]);
-		
-		plist.push(teethPos[begin][posBegin]);
-		
-		x = (ka1*teethPos[begin][3][0]-ka2*teethPos[begin][posBegin][0]-teethPos[begin][3][1]+teethPos[begin][posBegin][1])/(ka1-ka2);
-		y = ka2*(x-teethPos[begin][posBegin][0])+teethPos[begin][posBegin][1];
-		plist.push([x,y]);
-		
+
+        if(begin == 0 || begin == 16)
+        {
+            var baseEdgePoint;
+            if(begin == 0)
+            {
+                baseEdgePoint = leftBase;
+            }
+            else
+            {
+                baseEdgePoint = rightBase;
+            }
+            x = (ka1*teethPos[begin][4][0]-ka2*baseEdgePoint[0]-teethPos[begin][4][1]+baseEdgePoint[1])/(ka1-ka2);
+            y = ka2*(x-baseEdgePoint[0])+baseEdgePoint[1];
+            plist.push([x,y]);
+
+            plist.push(baseEdgePoint);
+
+            x = (ka1*teethPos[begin][3][0]-ka2*baseEdgePoint[0]-teethPos[begin][3][1]+baseEdgePoint[1])/(ka1-ka2);
+            y = ka2*(x-baseEdgePoint[0])+baseEdgePoint[1];
+            plist.push([x,y]);
+        }
+		else
+        {
+            if(teethList[begin-1][0] != 0)
+            {
+                begin -= 1;
+            }
+            x = (ka1*teethPos[begin][4][0]-ka2*teethPos[begin][posBegin][0]-teethPos[begin][4][1]+teethPos[begin][posBegin][1])/(ka1-ka2);
+            y = ka2*(x-teethPos[begin][posBegin][0])+teethPos[begin][posBegin][1];
+            plist.push([x,y]);
+
+            plist.push(teethPos[begin][posBegin]);
+
+            x = (ka1*teethPos[begin][3][0]-ka2*teethPos[begin][posBegin][0]-teethPos[begin][3][1]+teethPos[begin][posBegin][1])/(ka1-ka2);
+            y = ka2*(x-teethPos[begin][posBegin][0])+teethPos[begin][posBegin][1];
+            plist.push([x,y]);
+        }
+
 		for(var i = begin; i <= end; i++)
 		{
-			plist.push(teethPos[i][9]);
+		    plist.push(teethPos[i][9]);
+		    if(i == 7 && i < end)
+            {
+                plist.push([centerX, (teethPos[i][9][1]+teethPos[i][3][1])/2]);
+            }
 		}
-		
-		x = (kb2*teethPos[end][posEnd][0]-kb1*teethPos[end][3][0]+teethPos[end][3][1]-teethPos[end][posEnd][1])/(kb2-kb1);
-		y = kb2*(x-teethPos[end][posEnd][0])+teethPos[end][posEnd][1];
-		plist.push([x,y]);
 
-		
-		plist.push(teethPos[end][posEnd]);
-		
-		x = (kb2*teethPos[end][posEnd][0]-kb1*teethPos[end][4][0]+teethPos[end][4][1]-teethPos[end][posEnd][1])/(kb2-kb1);
-		y = kb2*(x-teethPos[end][posEnd][0])+teethPos[end][posEnd][1];
-		plist.push([x,y]);
+		if(end == 15 || end == 31)
+        {
+            var baseEdgePoint;
+            if(end == 15)
+            {
+                baseEdgePoint = rightBase;
+            }
+            else
+            {
+                baseEdgePoint = leftBase;
+            }
+            x = (kb2*baseEdgePoint[0]-kb1*teethPos[end][3][0]+teethPos[end][3][1]-baseEdgePoint[1])/(kb2-kb1);
+            y = kb2*(x-baseEdgePoint[0])+baseEdgePoint[1];
+            plist.push([x,y]);
+
+
+            plist.push(baseEdgePoint);
+
+            x = (kb2*baseEdgePoint[0]-kb1*teethPos[end][4][0]+teethPos[end][4][1]-baseEdgePoint[1])/(kb2-kb1);
+            y = kb2*(x-baseEdgePoint[0])+baseEdgePoint[1];
+            plist.push([x,y]);
+        }
+
+		else
+        {
+            if(teethList[end + 1][0] != 0)
+            {
+                end += 1;
+            }
+            x = (kb2*teethPos[end][posEnd][0]-kb1*teethPos[end][3][0]+teethPos[end][3][1]-teethPos[end][posEnd][1])/(kb2-kb1);
+            y = kb2*(x-teethPos[end][posEnd][0])+teethPos[end][posEnd][1];
+            plist.push([x,y]);
+
+
+            plist.push(teethPos[end][posEnd]);
+
+            x = (kb2*teethPos[end][posEnd][0]-kb1*teethPos[end][4][0]+teethPos[end][4][1]-teethPos[end][posEnd][1])/(kb2-kb1);
+            y = kb2*(x-teethPos[end][posEnd][0])+teethPos[end][posEnd][1];
+            plist.push([x,y]);
+        }
 		
 		for(var i = end; i >= begin; i--)
 		{
@@ -1860,11 +1973,24 @@ function drawBase(begin, end, type, istmp)
 	$('canvas').addLayer(obj);
 	var layers = $('canvas').getLayers();
 	var temp = layers[layers.length-1];
-	for(var i = layers.length-1; i > 0; i--)
+	if (isconndisped)
+	{
+	    i = 0;
+		while(layers[i].groups.indexOf("ConnBot")*layers[i].groups.indexOf("edgesticks")*layers[i].groups.indexOf("ConnTop")*layers[i].groups.indexOf("ConnTopBlank") == 0 && i < layers.length-1)
+        {
+            i++;
+        }
+        ibase = i;
+	}
+	else
+	{
+		ibase = 0;
+	}
+	for(var i = layers.length-1; i > ibase; i--)
 	{
 		layers[i] = layers[i-1];
 	}
-	layers[0] = temp;
+	layers[ibase] = temp;
 	$('canvas').drawLayers();
 }
 
@@ -2826,7 +2952,8 @@ function loadteethmap()
 		height: 223.89,
 		groups: ['teethPic']
 	});
-	
+
+
 	//修正牙列用图片
 	/* $('canvas').drawImage({
 		layer: true,

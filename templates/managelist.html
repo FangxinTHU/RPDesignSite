@@ -15,7 +15,7 @@
         <tr>
             <th>病历号</th>
             <th>姓名</th>
-            <th>身份证号</th>
+            <th>联系电话</th>
             <th class="hiddenDelete" style="display: none;">选择</th>
         </tr>
 
@@ -25,7 +25,7 @@
                     <tr>
                         <td><a href="/showVisit?IDnum={{ visit.vid }}&method=show">{{ visit.vid }}</a></td>
                         <td><a href="/showPatient?IDnum={{ visit.pidID }}">{{ visit.pname }}</a></td>
-                        <td><a href="/showVisit?IDnum={{ visit.pidID }}">{{ visit.pidnum }}</a></td>
+                        <td><a href="/showVisit?IDnum={{ visit.pidID }}">{{ visit.phonenum }}</a></td>
                         <td class="hiddenDelete" style="display: none;"><input type="checkbox" name="visitsToDelete[]" value="{{ visit.vid }}" /></td>
                     </tr>
 

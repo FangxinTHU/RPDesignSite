@@ -5,9 +5,9 @@
         <li><a href="#FormData" data-toggle="tab">修复信息</a></li>
         <li class="active"><a href="#RPDDesign" data-toggle="tab">修复设计</a></li>
         <li><a href="#RPDCheck" data-toggle="tab">制作工序及检验</a></li>
-        <li><input type="button" class="pure-button" onclick="submitData();" value="保存"></li>
-        &emsp;
-        <li><input type="button" class="pure-button" onclick="window.open('/showVisit?IDnum={{ IDnum }}&method=print','print');" value="打印"></li>
+        <li style="margin-right: 10px;"><input type="button" class="pure-button green_btn" onclick="submitData();" value="保存"></li>
+        <li style="margin-right: 10px;"><input type="button" class="pure-button blue_btn" onclick="window.open('/showVisit?IDnum={{ IDnum }}&method=print','print');" value="打印"></li>
+        <li><input type="button" class="pure-button red_btn" onclick="returnToList();" value="返回"></li>
     </ul>
     <div id="myTabContent" class="tab-content">
         <div class="tab-pane fade" id="BaseData">
@@ -756,6 +756,14 @@
                 success: function(data){alert('保存成功！');location.reload();}
 			});
 		}
+		function returnToList()
+        {
+            var conf = confirm("确认放弃未保存的工作，返回病历列表？");
+            if(conf)
+            {
+                window.location.href = "/";
+            }
+        }
     </script>
     <script type="text/javascript" src="/static/js/jquery-1.12.2.min.js"></script>
 	<script type="text/javascript" src="/static/js/jcanvas.min.js"></script>

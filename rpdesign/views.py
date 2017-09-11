@@ -133,7 +133,7 @@ def showVisitList(request):
     visitList = models.RPDVisit.objects.all()
     vlist = []
     for visit in visitList:
-        vlist.append({'vid': visit.idnum, 'pname':visit.pid.pname, 'pidnum':visit.pid.idnum, 'pidID':visit.pid.id})
+        vlist.append({'vid': visit.idnum, 'pname':visit.pid.pname, 'phonenum':visit.pid.phonenum, 'pidID':visit.pid.id})
 
     if request.user.is_superuser:
         staffList = models.Staff.objects.all()
