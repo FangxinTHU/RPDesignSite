@@ -5,9 +5,11 @@
         <li><a href="#FormData" data-toggle="tab">修复信息</a></li>
         <li class="active"><a href="#RPDDesign" data-toggle="tab">修复设计</a></li>
         <li><a href="#RPDCheck" data-toggle="tab">制作工序及检验</a></li>
-        <li style="margin-right: 10px;"><input type="button" class="pure-button green_btn" onclick="submitData();" value="保存"></li>
+        <li style="margin-right: 10px;"><input type="button" class="pure-button green_btn" onclick="submitData(false);" value="保存"></li>
         <li style="margin-right: 10px;"><input type="button" class="pure-button blue_btn" onclick="window.open('/showVisit?IDnum={{ IDnum }}&method=print','print');" value="打印"></li>
-        <li><input type="button" class="pure-button red_btn" onclick="returnToList();" value="返回"></li>
+        <li style="margin-right: 10px;"><input type="button" class="pure-button red_btn" onclick="returnToList();" value="返回"></li>
+        <li><input type="button" class="pure-button yellow_btn" onclick="submitData(true);" value="方案推荐"></li>
+
     </ul>
     <div id="myTabContent" class="tab-content">
         <div class="tab-pane fade" id="BaseData">
@@ -626,7 +628,7 @@
         });
 
 
-		function submitData()
+		function submitData(Wait)
 		{
             var Pname = $("#Pname").val();
             var PIDnum = $("#PIDnum").val();
@@ -697,64 +699,78 @@
             var burnish_checker = $("#burnish_checker").val();
             var china_arrange_checker = $("#china_arrange_checker").val();
             var fee = $("#fee").val();
-
+            var myajaxData = {
+                'teethList[]': teethList,
+                'IDnum': '{{ IDnum }}',
+                'quadraticTops[]': quadraticTops,
+                'remarkList[]': remarkList,
+                'innerPathList[]': innerPathList,
+                'conntype_hollow': conntypelist[0],
+                'maxilla_cover': conntypelist[1],
+                'tongue_cover': conntypelist[2],
+                'make_model_date': make_model_date,
+                'get_model_date': get_model_date,
+                'try_paraffin': try_paraffin,
+                'try_stake': try_stake,
+                'try_crown': try_crown,
+                'try_base': try_base,
+                'finish_date': finish_date,
+                'try_cradled': try_cradled,
+                'try_teeth_arrange': try_teeth_arrange,
+                'projects[]': projects,
+                'materials[]': materials,
+                'model_edge': model_edge,
+                'occlusion_state': occlusion_state,
+                'occlusion_record': occlusion_record,
+                'teeth_pre': teeth_pre,
+                'problem': problem,
+                'solution': solution,
+                'precheck': precheck,
+                'precheck_date': precheck_date,
+                'finalcheck': finalcheck,
+                'design_explain': design_explain,
+                'color': color,
+                'finalcheck_date': finalcheck_date,
+                'model_maker': model_maker,
+                'model_checker': model_checker,
+                'paraffin_maker': paraffin_maker,
+                'burnish_maker': burnish_maker,
+                'china_arrange_makeer': china_arrange_makeer,
+                'paraffin_checker': paraffin_checker,
+                'burnish_checker': burnish_checker,
+                'china_arrange_checker': china_arrange_checker,
+                'fee': fee,
+                'Pname': Pname,
+                'PIDnum': PIDnum,
+                'Age': Age,
+                'Phonenum': Phonenum,
+                'Sexual': Sexual,
+                'RepairType': RepairType
+            };
 
             $.ajaxSetup({
                 data: {csrfmiddlewaretoken: '{{ csrf_token }}' }
             });
-			$.ajax({
-				type: 'POST',
-				url: '/editTeeth/',
-				data: {
-                    'teethList[]': teethList,
-                    'IDnum': '{{ IDnum }}',
-                    'quadraticTops[]': quadraticTops,
-                    'remarkList[]': remarkList,
-                    'innerPathList[]': innerPathList,
-                    'conntype_hollow': conntypelist[0],
-                    'maxilla_cover': conntypelist[1],
-                    'tongue_cover': conntypelist[2],
-                    'make_model_date': make_model_date,
-                    'get_model_date': get_model_date,
-                    'try_paraffin': try_paraffin,
-                    'try_stake': try_stake,
-                    'try_crown': try_crown,
-                    'try_base': try_base,
-                    'finish_date': finish_date,
-                    'try_cradled': try_cradled,
-                    'try_teeth_arrange': try_teeth_arrange,
-                    'projects[]': projects,
-                    'materials[]': materials,
-                    'model_edge': model_edge,
-                    'occlusion_state': occlusion_state,
-                    'occlusion_record': occlusion_record,
-                    'teeth_pre': teeth_pre,
-                    'problem': problem,
-                    'solution': solution,
-                    'precheck': precheck,
-                    'precheck_date': precheck_date,
-                    'finalcheck': finalcheck,
-                    'design_explain': design_explain,
-                    'color': color,
-                    'finalcheck_date': finalcheck_date,
-                    'model_maker': model_maker,
-                    'model_checker': model_checker,
-                    'paraffin_maker': paraffin_maker,
-                    'burnish_maker': burnish_maker,
-                    'china_arrange_makeer': china_arrange_makeer,
-                    'paraffin_checker': paraffin_checker,
-                    'burnish_checker': burnish_checker,
-                    'china_arrange_checker': china_arrange_checker,
-                    'fee': fee,
-					'Pname': Pname,
-                    'PIDnum': PIDnum,
-                    'Age': Age,
-                    'Phonenum': Phonenum,
-                    'Sexual': Sexual,
-                    'RepairType': RepairType
-                },
-                success: function(data){alert('保存成功！');location.reload();}
-			});
+            if(!Wait)
+            {
+                $.ajax({
+                    type: 'POST',
+                    url: '/editTeeth/',
+                    data: myajaxData,
+                    success: function(data){alert('保存成功！');location.reload();}
+			    });
+            }
+            else
+            {
+                $.ajax({
+                    type: 'POST',
+                    url: '/editTeeth/',
+                    data: myajaxData,
+                    success: function(data){window.open('/getRecommend?IDnum={{ IDnum }}','','height=800,width=800');}
+			    });
+            }
+
+
 		}
 		function returnToList()
         {

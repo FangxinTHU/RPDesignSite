@@ -243,10 +243,21 @@ def editTeeth(request):
     visit.type = RepairType
 
     teethobjs = models.Tooth.objects.filter(vid=visit)
+    teethlossT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    teethlossB = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    sum1 = 0
+    sum2 = 0
     for i in xrange(32):
         toothprop = teethList[i].split(',')
         for toothobj in teethobjs:
             if toothobj.pos == i:
+                if int(toothprop[0]) != 0:
+                    if i < 16:
+                        teethlossT[i] = 1
+                        sum1 += 1
+                    else:
+                        teethlossB[i-16] = 1
+                        sum2 += 1
                 toothobj.tooth_lost = int(toothprop[0])
                 toothobj.tooth_base = int(toothprop[1])
                 toothobj.tooth_clasp = int(toothprop[2])
@@ -298,6 +309,66 @@ def editTeeth(request):
         visit.maxilla_cover = True
     if(tongue_cover == 'true'):
         visit.tongue_cover = True
+
+    gapdata = []
+    gapdata_kdNode = ''
+    if not (sum1 == 2 and teethlossT[0] == 1 and teethlossT[15] == 1):
+        gapdata = []
+        gapdata_kdNode = ''
+        i = 0
+        while i < 16:
+            if (teethlossT[i] == 1):
+                begin = i
+                while (i < 16 and teethlossT[i] == 1):
+                    i += 1
+                end = i - 1
+                gapdata.append([begin, end])
+                gapdata_kdNode += str(begin)
+                gapdata_kdNode += ','
+                gapdata_kdNode += str(end)
+                gapdata_kdNode += ','
+            else:
+                i += 1
+        l = len(gapdata)
+        gapdata_kdNode = gapdata_kdNode[:-1]
+        if (gapdata[0][0] == 0 and gapdata[0][1] > 0) and (gapdata[l - 1][1] == 15 and gapdata[l - 1][0] < 15):
+            visit.KennedyTop = 1
+        elif (gapdata[0][0] == 0 and gapdata[0][1] > 0) or (gapdata[l - 1][1] == 15 and gapdata[l - 1][0] < 15):
+            visit.KennedyTop = 2
+        elif l == 1 and gapdata[0][0] < 8 and gapdata[0][1] > 7:
+            visit.KennedyTop = 4
+        else:
+            visit.KennedyTop = 3
+        visit.teethlosslistTop = gapdata_kdNode
+    if not (sum2 == 2 and teethlossB[0] == 1 and teethlossB[15] == 1):
+        gapdata = []
+        gapdata_kdNode = ''
+        i = 0
+        while i < 16:
+            if (teethlossB[i] == 1):
+                begin = i
+                while (i < 16 and teethlossB[i] == 1):
+                    i += 1
+                end = i - 1
+                gapdata.append([begin, end])
+                gapdata_kdNode += str(begin)
+                gapdata_kdNode += ','
+                gapdata_kdNode += str(end)
+                gapdata_kdNode += ','
+            else:
+                i += 1
+
+        l = len(gapdata)
+        gapdata_kdNode = gapdata_kdNode[:-1]
+        if (gapdata[0][0] == 0 and gapdata[0][1] > 0) and (gapdata[l - 1][1] == 15 and gapdata[l - 1][0] < 15):
+            visit.KennedyBot = 1
+        elif (gapdata[0][0] == 0 and gapdata[0][1] > 0) or (gapdata[l - 1][1] == 15 and gapdata[l - 1][0] < 15):
+            visit.KennedyBot = 2
+        elif l == 1 and gapdata[0][0] < 8 and gapdata[0][1] > 7:
+            visit.KennedyBot = 4
+        else:
+            visit.KennedyBot = 3
+        visit.teethlosslistBot = gapdata_kdNode
 
     visit.save()
     return HttpResponse('Success')
@@ -555,3 +626,223 @@ def deleteVisit(visit):
     models.Tooth.objects.filter(vid=vid.id).delete()
     vid.delete()
     return
+
+def dis(teethlossString, teethlossList):
+    stringList = teethlossString.split(',')
+    if len(stringList) != len(teethlossList):
+        return 1000
+    else:
+        distance = 0
+        for i in xrange(len(stringList)):
+            distance += abs(int(stringList[i]) - teethlossList[i])
+        return distance
+
+
+def findNST(myid, teethloss, pos):
+    gapdata = []
+    gapdata_kdNode = []
+
+    i = 0
+    while i < 16:
+        if (teethloss[i] == 1):
+            begin = i
+            while (i < 16 and teethloss[i] == 1):
+                i += 1
+            end = i - 1
+            gapdata.append([begin, end])
+            gapdata_kdNode.append(begin)
+            gapdata_kdNode.append(end)
+        else:
+            i += 1
+
+    l = len(gapdata)
+    if pos == 'T':
+        if (gapdata[0][0] == 0 and gapdata[0][1] > 0) and (gapdata[l - 1][1] == 15 and gapdata[l - 1][0] < 15):
+            nearvisitList = models.RPDVisit.objects.filter(KennedyTop=1).exclude(id=myid)
+        elif (gapdata[0][0] == 0 and gapdata[0][1] > 0) or (gapdata[l - 1][1] == 15 and gapdata[l - 1][0] < 15):
+            nearvisitList = models.RPDVisit.objects.filter(KennedyTop=2).exclude(id=myid)
+        elif l == 1 and gapdata[0][0] < 8 and gapdata[0][1] > 7:
+            nearvisitList = models.RPDVisit.objects.filter(KennedyTop=4).exclude(id=myid)
+        else:
+            nearvisitList = models.RPDVisit.objects.filter(KennedyTop=3).exclude(id=myid)
+
+        if len(nearvisitList) == 0:
+            NSTNode = 0
+        else:
+            mindis = dis(nearvisitList[0].teethlosslistTop, gapdata_kdNode)
+            NSTNode = nearvisitList[0].id
+            for i in xrange(len(nearvisitList)):
+                newdis = dis(nearvisitList[i].teethlosslistTop, gapdata_kdNode)
+                if newdis < mindis:
+                    mindis = newdis
+                    NSTNode = nearvisitList[i].id
+    else:
+        if (gapdata[0][0] == 0 and gapdata[0][1] > 0) and (gapdata[l - 1][1] == 15 and gapdata[l - 1][0] < 15):
+            nearvisitList = models.RPDVisit.objects.filter(KennedyBot=1).exclude(id=myid)
+        elif (gapdata[0][0] == 0 and gapdata[0][1] > 0) or (gapdata[l - 1][1] == 15 and gapdata[l - 1][0] < 15):
+            nearvisitList = models.RPDVisit.objects.filter(KennedyBot=2).exclude(id=myid)
+        elif l == 1 and gapdata[0][0] < 8 and gapdata[0][1] > 7:
+            nearvisitList = models.RPDVisit.objects.filter(KennedyBot=4).exclude(id=myid)
+        else:
+            nearvisitList = models.RPDVisit.objects.filter(KennedyBot=3).exclude(id=myid)
+
+        if len(nearvisitList) == 0:
+            NSTNode = 0
+        else:
+            mindis = dis(nearvisitList[0].teethlosslistBot, gapdata_kdNode)
+            NSTNode = nearvisitList[0].id
+            for i in xrange(len(nearvisitList)):
+                newdis = dis(nearvisitList[i].teethlosslistBot, gapdata_kdNode)
+                if newdis < mindis:
+                    mindis = newdis
+                    NSTNode = nearvisitList[i].id
+    return NSTNode
+
+def getRecommend(request):
+    if not request.user.is_authenticated():
+        return render(request, 'unlogin_index.html')
+    IDnum = request.GET['IDnum']
+    visit = models.RPDVisit.objects.get(idnum=IDnum)
+    teeth = models.Tooth.objects.filter(vid=visit)
+    teethlossT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    teethlossB = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    sum1 = 0
+    sum2 = 0
+    teethList = []
+    for i in xrange(32):
+        teethList.append([[0], [0], [0], [0], [0]])
+    for tooth in teeth:
+        if tooth.tooth_lost != 0:
+            if tooth.pos < 16:
+                teethlossT[tooth.pos] = 1
+                sum1 += 1
+            else:
+                teethlossB[tooth.pos - 16] = 1
+                sum2 += 1
+        teethList[tooth.pos][0] = tooth.tooth_lost
+    idT = 0
+    idB = 0
+    if not (sum1 == 2 and teethlossT[0] == 1 and teethlossT[15] == 1):
+        idT = findNST(visit.id, teethlossT, 'T')
+    if not (sum2 == 2 and teethlossB[0] == 1 and teethlossB[15] == 1):
+        idB = findNST(visit.id, teethlossB, 'B')
+
+    if idT != 0:
+        TNSTNode = models.RPDVisit.objects.get(id=idT)
+        teeth = models.Tooth.objects.filter(vid=TNSTNode)
+        for tooth in teeth:
+            if tooth.pos < 16:
+                teethList[tooth.pos][1] = tooth.tooth_base
+                teethList[tooth.pos][2] = tooth.tooth_clasp
+                teethList[tooth.pos][3] = tooth.tooth_support
+                teethList[tooth.pos][4] = tooth.tongue_blank
+    if idB != 0:
+        BNSTNode = models.RPDVisit.objects.get(id=idB)
+        teeth = models.Tooth.objects.filter(vid=BNSTNode)
+        for tooth in teeth:
+            if tooth.pos > 15:
+                teethList[tooth.pos][1] = tooth.tooth_base
+                teethList[tooth.pos][2] = tooth.tooth_clasp
+                teethList[tooth.pos][3] = tooth.tooth_support
+                teethList[tooth.pos][4] = tooth.tongue_blank
+
+    for i in xrange(16):
+        if teethList[i][0] == 1:
+            teethList[i][1] = 1
+            if teethList[i][2] != 0 or teethList[i][3] != 0:
+                j = i
+                t1 = t2 = i
+                find = False
+                while(j < 16):
+                    if teethList[j][0] == 0 and teethList[j][2] == 0 and teethList[j][3] == 0:
+                        find = True
+                        break
+                    j += 1
+                if find:
+                    t1 = j
+                    find = False
+                j = i
+                while(j >= 0):
+                    if teethList[j][0] == 0 and teethList[j][2] == 0 and teethList[j][3] == 0:
+                        find = True
+                        break
+                    j -= 1
+                if find:
+                    t2 = j
+                    find = False
+                j = i
+                if t1 != i:
+                    teethList[t1][2] = teethList[i][2]
+                    teethList[t1][3] = teethList[i][3]
+                if t2 != i:
+                    teethList[t2][2] = teethList[i][2]
+                    teethList[t2][3] = teethList[i][3]
+                teethList[i][2] = teethList[i][3] = 0
+        elif teethList[i][0] == 0:
+            teethList[i][1] = 0
+
+    for i in xrange(16,32):
+        if teethList[i][0] == 1:
+            teethList[i][1] = 1
+            if teethList[i][2] != 0 or teethList[i][3] != 0:
+                j = i
+                t1 = t2 = i
+                find = False
+                while(j < 32):
+                    if teethList[j][0] == 0 and teethList[j][2] == 0 and teethList[j][3] == 0:
+                        find = True
+                        break
+                    j += 1
+                if find:
+                    t1 = j
+                    find = False
+                j = i
+                while(j > 15):
+                    if teethList[j][0] == 0 and teethList[j][2] == 0 and teethList[j][3] == 0:
+                        find = True
+                        break
+                    j -= 1
+                if find:
+                    t2 = j
+                    find = False
+                j = i
+                if t1 != i:
+                    teethList[t1][2] = teethList[i][2]
+                    teethList[t1][3] = teethList[i][3]
+                if t2 != i:
+                    teethList[t2][2] = teethList[i][2]
+                    teethList[t2][3] = teethList[i][3]
+                teethList[i][2] = teethList[i][3] = 0
+        elif teethList[i][0] == 0:
+            teethList[i][1] = 0
+
+    visitDic = {
+        'teethList': json.dumps(teethList),
+        'IDnum': IDnum
+    }
+    tpl = "recommand.html"
+    return render(request, tpl, visitDic)
+
+def confirmRecommand(request):
+    if not request.user.is_authenticated():
+        return render(request, 'unlogin_index.html')
+    teethList = request.POST.getlist('teethList[]')
+    IDnum =  request.POST.get('IDnum')
+
+    visit = models.RPDVisit.objects.get(idnum=IDnum)
+
+
+    teethobjs = models.Tooth.objects.filter(vid=visit)
+    for i in xrange(32):
+        toothprop = teethList[i].split(',')
+        for toothobj in teethobjs:
+            if toothobj.pos == i:
+                toothobj.tooth_lost = int(toothprop[0])
+                toothobj.tooth_base = int(toothprop[1])
+                toothobj.tooth_clasp = int(toothprop[2])
+                toothobj.tooth_support = int(toothprop[3])
+                toothobj.tongue_blank = int(toothprop[4])
+                toothobj.save()
+
+    visit.save()
+    return HttpResponse('Success')

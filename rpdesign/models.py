@@ -122,6 +122,14 @@ class RPDVisit(models.Model):
     maxilla_cover = models.BooleanField(default=False)
     #上牙连接体中空部分边界点列表
     innerPathList = models.TextField(null=True)
+    #上牙肯尼迪分类
+    KennedyTop = models.IntegerField(null=True)
+    #下牙肯尼迪分类
+    KennedyBot = models.IntegerField(null=True)
+    #上牙缺损序列
+    teethlosslistTop = models.TextField(null=True)
+    #下牙缺损序列
+    teethlosslistBot = models.TextField(null=True)
 
 
 class Tooth(models.Model):

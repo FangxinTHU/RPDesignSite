@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)http://v3.bootcss.com/examples/navbar-fixed-top/# -->
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/html"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <script type="text/javascript" src="/static/js/jquery-1.12.2.min.js"></script>
+    <script src="/static/js/jquery.form.min.js"></script>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/css/navbar-fixed-top.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="/static/js/ie-emulation-modes-warning.js"></script>
+    <link rel="stylesheet" href="/static/css/pure-min.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="http://cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="http://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <body style="padding:0 0 0 0">
+    <div style="padding:0 15px 0 15px;">
+        <input type="button" class="pure-button green_btn" onclick="submitData();" value="接受推荐">
+        <canvas id="myCanvas" width="700" height="700" style="border:1px solid #c3c3c3;float:left;"></canvas>
+
+        <script>
+            //存放牙齿详细信息的矩阵
+            var teethList = {{ teethList|safe }};
+            //存放当前连接体片段中各曲线的顶点
+            var quadraticTops = [];
+            //存放备注列表
+            var remarkList = [];
+            //上牙连接体中空部分边界点列表
+            var innerPathList = [];
+            //连接体形态标识
+            var conntypelist = [false, false, false];
+
+            $("#teethnav").width(Math.max(document.body.offsetWidth-800, 300));
+
+            $(window).resize(function() {
+                $("#teethnav").width(Math.max(document.body.offsetWidth-800, 300));
+            });
+
+
+            function submitData()
+            {
+                $.ajaxSetup({
+                    data: {csrfmiddlewaretoken: '{{ csrf_token }}' }
+                });
+                $.ajax({
+                    type: 'POST',
+                    url: '/confirmRecommand/',
+                    data: {
+                        'teethList[]': teethList,
+                        'IDnum': '{{ IDnum }}'
+                    },
+                    success: function(data){alert('推荐成功！');window.opener.location.reload();window.close();}
+                });
+            }
+        </script>
+        <script type="text/javascript" src="/static/js/jquery-1.12.2.min.js"></script>
+        <script type="text/javascript" src="/static/js/jcanvas.min.js"></script>
+        <script type="text/javascript" src="/static/js/jcanvas-handles.min.js"></script>
+        <script type="text/javascript" src="/static/js/global.js"></script>
+        <script type="text/javascript" src="/static/js/drawyourteeth.js"></script>
+        <script>
+            isconndisped = true;
+            initTeethHTML();
+
+        </script>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/static/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
+
+
+
+</body></html>
+
+
+
+
+

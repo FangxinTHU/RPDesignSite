@@ -32,4 +32,6 @@ urlpatterns = [
     url(r'^newStaff/', views.newStaff),
     url(r'^addStaff/', views.addStaff),
     url(r'^deleteVisit/', views.deleteVisits),
+    url(r'^getRecommend/', views.getRecommend),
+    url(r'^confirmRecommand/', views.confirmRecommand),
 ]
